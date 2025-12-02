@@ -9,8 +9,8 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-    document.getElementById("side-left").style.display = "none";
-    document.getElementById("side-right").style.display = "none";
+    document.getElementById("side-left").classList.toggle("hidden");
+    document.getElementById("side-right").classList.toggle("hidden");
 
     const { width, height } = this.scale;
 
