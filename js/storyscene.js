@@ -103,7 +103,7 @@ class StoryScene extends Phaser.Scene {
       this.storyText.setText(this.fullText);
       this.isDone = true;
       this.showContinueHint();
-      this.scene.start("StartScene");
+      this.scene.start("level1scene");
     } else {
       // Weiter zur LevelScene
       this.scene.start("GameScene");
