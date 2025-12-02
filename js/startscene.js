@@ -9,7 +9,6 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
-
     const { width, height } = this.scale;
 
     this.cameras.main.setBackgroundColor("#000000");
@@ -30,7 +29,7 @@ class StartScene extends Phaser.Scene {
 
     startText
       .setInteractive({ useHandCursor: true })
-      .on("pointerover", () => startText.setStyle({ color: "#ffcc00" }))
+      .on("pointerover", () => startText.setStyle({ color: "#1E354C" }))
       .on("pointerout", () => startText.setStyle({ color: "#ffffff" }))
       .on("pointerdown", () => {
         this.scene.start("StoryScene"); // Sort the Chaos Szene

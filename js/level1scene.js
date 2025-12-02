@@ -7,7 +7,7 @@ class level1scene extends Phaser.Scene {
 
   preload() {
     // Lade alle Assets für das Level
-    this.load.image("desk_bg", "assets/desk_bg.png");
+    this.load.image("desk_bg", "assets/levelOne/levelOneBackground.png");
     this.load.image("book", "assets/book.png");
     this.load.image("pencil", "assets/pencil.png");
     this.load.image("paper_stack", "assets/paper_stack.png");
@@ -23,14 +23,13 @@ class level1scene extends Phaser.Scene {
   }
 
   create() {
-
     const { width, height } = this.sys.game.config;
 
     // 1. Hintergrund setzen
     this.setFullScreenBackground("desk_bg");
 
     this.add
-      .text(width / 2, 20, "Level 1: Chaos am Schreibtisch", {
+      .text(width / 2, 20, "Level 1: Chaos im Universum", {
         fontSize: "28px",
         fill: "#FFD700",
       })
