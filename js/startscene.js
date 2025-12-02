@@ -32,7 +32,7 @@ class StartScene extends Phaser.Scene {
       .on("pointerover", () => startText.setStyle({ color: "#ffcc00" }))
       .on("pointerout", () => startText.setStyle({ color: "#ffffff" }))
       .on("pointerdown", () => {
-        this.scene.start("GameScene"); // Sort the Chaos Szene
+        this.scene.start("StoryScene"); // Sort the Chaos Szene
       });
   }
 }
