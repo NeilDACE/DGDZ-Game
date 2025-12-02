@@ -106,7 +106,7 @@ class StoryScene extends Phaser.Scene {
       this.scene.start("level1scene");
     } else {
       // Weiter zur LevelScene
-      this.scene.start("GameScene");
+      this.scene.start("level1scene");
     }
   }
 }
