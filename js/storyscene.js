@@ -4,6 +4,9 @@ class StoryScene extends Phaser.Scene {
   }
 
   create() {
+    document.getElementById("side-left").style.display = "block";
+    document.getElementById("side-right").style.display = "block";
+
     const { width, height } = this.scale;
 
     this.cameras.main.setBackgroundColor("#000000");

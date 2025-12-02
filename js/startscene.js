@@ -9,6 +9,9 @@ class StartScene extends Phaser.Scene {
   }
 
   create() {
+    document.getElementById("side-left").style.display = "none";
+    document.getElementById("side-right").style.display = "none";
+
     const { width, height } = this.scale;
 
     this.cameras.main.setBackgroundColor("#000000");
@@ -32,7 +35,7 @@ class StartScene extends Phaser.Scene {
       .on("pointerover", () => startText.setStyle({ color: "#ffcc00" }))
       .on("pointerout", () => startText.setStyle({ color: "#ffffff" }))
       .on("pointerdown", () => {
-        this.scene.start('StoryScene'); // Sort the Chaos Szene
+        this.scene.start("StoryScene"); // Sort the Chaos Szene
       });
   }
 }

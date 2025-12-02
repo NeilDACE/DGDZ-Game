@@ -6,7 +6,21 @@ body {
   align-items: center;
   height: 100vh;
 }
-h1 {
-  color: white;
-  font-family: Arial, sans-serif;
+#layout-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Abstand zwischen Bildern und Canvas */
+  padding-top: 20px;
+}
+
+#game-container canvas {
+  display: block;
+}
+
+#side-left,
+#side-right {
+  width: 250px; /* Größe anpassen */
+  height: auto;
+  object-fit: contain;
 }
