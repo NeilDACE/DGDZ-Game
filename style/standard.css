@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  background: #000; /* Seite auch schwarz */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+h1 {
+  color: white;
+  font-family: Arial, sans-serif;
+}
