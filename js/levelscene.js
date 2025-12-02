@@ -147,6 +147,7 @@ class LevelScene extends Phaser.Scene {
     if (remaining === 0) {
       this.statusText.setText("✨ Ordnung hergestellt! ✨");
       this.cameras.main.flash(400, 255, 255, 255);
+      this.scene.start('level1scene'); // Nächste Szene starten
     } else {
       this.statusText.setText("Noch " + remaining + " Objekte...");
     }
