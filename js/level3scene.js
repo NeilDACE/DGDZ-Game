@@ -1,36 +1,257 @@
-
 class level3scene extends Phaser.Scene {
-  // Konstruktor ist korrekt
-  constructor() {
-    super("level3scene");
-  }
+    // --- KONSTANTEN UND VARIABLEN ---
+    constructor() {
+        super({ key: "level3scene" });
+        
+        // Konstanten für den animierten Hintergrund (1536x1024)
+        this.FRAME_WIDTH = 1536;
+        this.FRAME_HEIGHT = 1024; 
+        this.START_FRAMERATE = 20;
+        this.MIN_FRAMERATE = 1;
+        this.FRAMERATE_DECREMENT = 2;
 
-  // FEHLER: 'function' muss entfernt werden
-  preload () {
-    // 'myAnimation' ist der Schlüssel, mit dem Sie das Bild später referenzieren
-    // 'assets/sheet.png' ist der Pfad zu Ihrem Sprite Sheet
-    // frameWidth und frameHeight müssen der Größe eines einzelnen Bildes/Frames entsprechen (z.B. 32x32)
-    this.load.spritesheet('myAnimation', 'assets/sheet.png', {
-        frameWidth: 32,
-        frameHeight: 32
-    });
-  } // KEIN Komma nach Methoden!
+        // SEQUENZ-DEFINITION
+        // Wichtig: Die Namen müssen exakt mit den Bild-Keys übereinstimmen!
+        this.correctSequence = [
+            "pilz", "auge", "wurzel", "knochen", "flasche", 
+            "kralle", "feder", "beere", "blatt", "kristall"
+        ];
+        this.TOTAL_INGREDIENTS = this.correctSequence.length;
+        this.currentSequenceIndex = 0; // Index der als Nächstes benötigten Zutat
+        
+        // Spielstatus & Objekte
+        this.ingredientsCollected = 0;
+        this.ingredientsGroup = null; // Wichtig: Wird in create() als Phaser.Group initialisiert!
+        this.CAULDRON_TARGET = { x: 0, y: 0, radius: 100 };
+        this.background;
+    }
 
-  // FEHLER: 'function' muss entfernt werden
-  create () {
-    // 1. Animation definieren
-    this.anims.create({
-        key: 'backgroundAnimation', // Eindeutiger Name für die Animation
-        frames: this.anims.generateFrameNumbers('myAnimation', { start: 0, end: 3 }), // Frames 0, 1, 2, 3 nutzen
-        frameRate: 8,              // Frames pro Sekunde (z.B. 8)
-        repeat: -1                 // Wiederholen: -1 bedeutet unendlich oft
-    });
+    // --- PRELOAD: ASSETS LADEN ---
+    preload() {
+        this.load.spritesheet('backgroundAnimation', 'Assets/levelThree/background-level-3-spritesheet.png', {
+            frameWidth: this.FRAME_WIDTH,
+            frameHeight: this.FRAME_HEIGHT
+        });
+        
+        this.load.image("cauldron", "Assets/levelFour/kessel.png");
+        
+        for (const key of this.correctSequence) {
+            this.load.image(key, `Assets/levelFour/ingredients/${key}.png`);
+        }
+    }
 
-    // 2. Ein Sprite-Objekt erstellen und die Animation starten
-    // x und y sind die Positionen, 'myAnimation' der Schlüssel zum Sprite Sheet
-    const sprite = this.add.sprite(100, 100, 'myAnimation');
+    // --- CREATE: SPIELOBJEKTE ERSTELLEN ---
+    create() {
+        const { width, height } = this.sys.game.config;
+        
+        this.CAULDRON_TARGET.x = width / 2;
+        this.CAULDRON_TARGET.y = height / 2;
 
-    // Animation auf dem Sprite abspielen
-    sprite.play('backgroundAnimation');
-  }
-} // KEIN Semikolon am Ende der Klassendefinition
+        // 1. Animierten Hintergrund einrichten
+        this.setupAnimatedBackground(width, height);
+        
+        // 2. Kessel (Target) in der Mitte platzieren
+        this.cauldron = this.add.image(this.CAULDRON_TARGET.x, this.CAULDRON_TARGET.y, "cauldron")
+            .setScale(0.5) 
+            .setDepth(5); 
+
+        // 3. Gruppe für alle Zutaten erstellen (Wichtig: Hier initialisieren!)
+        this.ingredientsGroup = this.add.group();
+        
+        // 4. Feedback-Text
+        this.feedbackText = this.add
+            .text(width / 2, height - 30, `Wird geladen...`, {
+                fontSize: "24px",
+                fill: "#FFFF00",
+                backgroundColor: "#1E1E1E",
+            })
+            .setOrigin(0.5)
+            .setDepth(10);
+            
+        // 5. Level starten/zurücksetzen, um den Anfangszustand zu setzen
+        this.resetLevel();
+    }
+    
+    // ----------------------------------------------------------------------
+    // --- NEUE FUNKTION: LEVEL ZURÜCKSETZEN ---
+    // ----------------------------------------------------------------------
+    
+    /**
+     * Setzt den gesamten Spielzustand zurück, wenn ein Fehler auftritt oder das Spiel beginnt.
+     */
+    resetLevel() {
+        // 1. Zerstöre alle vorhandenen Zutaten-Sprites
+        // Die Prüfung if (this.ingredientsGroup) { ... } ist jetzt sicher, da es in create initialisiert wird.
+        this.ingredientsGroup.clear(true, true);
+        
+        // 2. Setze den Spielstatus zurück
+        this.ingredientsCollected = 0;
+        this.currentSequenceIndex = 0;
+        
+        // 3. Platziere alle Zutaten neu (Alle Keys aus der Sequenz)
+        const { width, height } = this.sys.game.config;
+        this.placeIngredients(width, height, this.correctSequence);
+        
+        // 4. Setze Framerate auf den Anfangswert zurück (schnelles Kochen)
+        this.updateBackgroundFramerate();
+        
+        // 5. Aktualisiere Feedback
+        this.feedbackText.setText(
+            `Zutaten: 0/${this.TOTAL_INGREDIENTS} | Benötigt: ${this.correctSequence[0]}`
+        );
+    }
+    
+    // ----------------------------------------------------------------------
+    // --- WICHTIGE HILFSFUNKTIONEN ---
+    // ----------------------------------------------------------------------
+
+    /**
+     * Platziere die in der Liste keysToPlace definierten Zutaten zufällig.
+     * @param {string[]} keysToPlace - Array der Keys, die als Sprite platziert werden sollen.
+     */
+    placeIngredients(width, height, keysToPlace) { 
+        const padding = 150; 
+        
+        // Um nur eindeutige Keys zu platzieren, falls doppelte in der Sequenz sind
+        const uniqueKeysToPlace = [...new Set(keysToPlace)]; 
+        
+        for (const key of uniqueKeysToPlace) { 
+            
+            let startX, startY, distanceToCauldron;
+            
+            // Logik für zufällige Startposition (außerhalb des Kessels)
+            do {
+                startX = Phaser.Math.Between(padding, width - padding);
+                startY = Phaser.Math.Between(padding, height - padding);
+                
+                distanceToCauldron = Phaser.Math.Distance.Between(
+                    startX, startY, 
+                    this.CAULDRON_TARGET.x, this.CAULDRON_TARGET.y
+                );
+            } while (distanceToCauldron < this.CAULDRON_TARGET.radius * 1.5);
+            
+            // Füge die Zutat der Gruppe hinzu (damit sie bei Reset gelöscht werden kann)
+            const item = this.createDraggableIngredient(key, startX, startY);
+            this.ingredientsGroup.add(item); 
+        }
+    }
+
+    /**
+     * Erstellt ein ziehbares Zutaten-Objekt und gibt es zurück.
+     */
+    createDraggableIngredient(key, startX, startY) {
+        const item = this.add
+            .image(startX, startY, key)
+            .setInteractive({ draggable: true })
+            .setScale(0.3) 
+            .setDepth(1)
+            .setName(key); // Der Name ist entscheidend für die Sequenzprüfung!
+
+        item.on("drag", (pointer, dragX, dragY) => {
+            item.x = dragX;
+            item.y = dragY;
+        });
+
+        item.on("dragend", () => {
+            this.checkCauldronDrop(item);
+        });
+
+        return item;
+    }
+    
+    /**
+     * Prüft, ob die Zutat in den Kessel gezogen wurde und leitet zur Verarbeitung weiter.
+     */
+    checkCauldronDrop(item) {
+        const dist = Phaser.Math.Distance.Between(
+            item.x, item.y, 
+            this.CAULDRON_TARGET.x, this.CAULDRON_TARGET.y
+        );
+
+        if (dist < this.CAULDRON_TARGET.radius) {
+            this.processDrop(item); 
+        }
+    }
+
+    /**
+     * Verarbeitet den Drop: Prüft die Reihenfolge und reagiert auf Korrekt/Falsch (mit Reset).
+     */
+    processDrop(item) {
+        // Prüfe, ob das Spiel bereits abgeschlossen ist
+        if (this.ingredientsCollected === this.TOTAL_INGREDIENTS) return;
+        
+        const requiredKey = this.correctSequence[this.currentSequenceIndex];
+        
+        if (item.name === requiredKey) {
+            // --- KORREKTE ZUTAT GEZOGEN ---
+            
+            item.destroy(); 
+            this.ingredientsCollected++;
+            this.currentSequenceIndex++;
+            
+            this.updateBackgroundFramerate();
+
+            if (this.ingredientsCollected === this.TOTAL_INGREDIENTS) {
+                this.levelComplete();
+            } else {
+                 // Aktualisiere Feedback mit der als Nächstes benötigten Zutat
+                this.feedbackText.setText(
+                    `Zutaten: ${this.ingredientsCollected}/${this.TOTAL_INGREDIENTS} | Benötigt: ${this.correctSequence[this.currentSequenceIndex]}`
+                );
+            }
+            
+        } else {
+            // --- FALSCHE ZUTAT GEZOGEN: LEVEL RESET ---
+            this.feedbackText.setText(`Falsche Zutat! Benötigt: ${requiredKey}. Alle Zutaten zurückgesetzt!`);
+            
+            // Führe den Reset nach kurzer Verzögerung aus (1.5 Sekunden)
+            this.time.delayedCall(1500, this.resetLevel, [], this);
+        }
+    }
+
+
+    /**
+     * Passt die Framerate der Hintergrundanimation an den Fortschritt an (Verlangsamung).
+     */
+    updateBackgroundFramerate() {
+        // ... (Logik unverändert)
+        let newFramerate = this.START_FRAMERATE - (this.ingredientsCollected * this.FRAMERATE_DECREMENT);
+        newFramerate = Math.max(newFramerate, this.MIN_FRAMERATE);
+        
+        this.background.anims.play({ 
+            key: 'backgroundAnimation', 
+            frameRate: newFramerate,
+            repeat: -1
+        });
+    }
+
+    /**
+     * Wird aufgerufen, wenn alle Zutaten gesammelt wurden. Stoppt die Animation.
+     */
+    levelComplete() {
+        // ... (Logik unverändert)
+        this.feedbackText.setText("Brau abgeschlossen! Das Gebräu ist fertig!");
+        
+        this.background.anims.stop();
+        this.background.setFrame(3); 
+    }
+    
+    // setupAnimatedBackground (Unverändert)
+    setupAnimatedBackground(width, height) {
+        this.anims.create({
+            key: 'backgroundAnimation', 
+            frames: this.anims.generateFrameNumbers('backgroundAnimation', { start: 0, end: 3 }), 
+            frameRate: this.START_FRAMERATE, 
+            repeat: -1, 
+        });
+        
+        this.background = this.add.sprite(width / 2, height / 2, 'backgroundAnimation');
+        const scaleX = width / this.FRAME_WIDTH;
+        const scaleY = height / this.FRAME_HEIGHT; 
+        const scale = Math.min(scaleX, scaleY); 
+
+        this.background.setScale(scale); 
+        this.background.setDepth(-10); 
+        this.background.play("backgroundAnimation");
+    }
+}
