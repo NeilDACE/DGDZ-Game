@@ -46,6 +46,10 @@ class level1scene extends Phaser.Scene {
    */
 
   create() {
+    document.getElementById("bodyId").classList.toggle("level1-background");
+    document.getElementById("game-container").classList.toggle("level1-game-container");
+    
+    
     const { width, height } = this.sys.game.config; // Hintergrundbild setzen und skalieren
 
     this.setFullScreenBackground("desk_bg");
