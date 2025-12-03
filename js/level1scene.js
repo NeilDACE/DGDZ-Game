@@ -1,61 +1,83 @@
+/**
+ * Hauptszene für Level 1: Ordnen der Planeten.
+ * Die Planeten müssen in die korrekte Reihenfolge und Position gezogen werden.
+ */
 class level1scene extends Phaser.Scene {
   constructor() {
-    super({ key: "level1scene" });
-    this.chaosCount = 4; // Anzahl der zu ordnenden Objekte
-    this.orderAchieved = 0; // Zähler für bereits geordnete Objekte
+    super({ key: "level1scene" }); // --- Spielzustand ---
+
+    this.chaosCount = 8; // Gesamtzahl der Planeten.
+    this.orderAchieved = 0; // Zähler für korrekt platzierte Planeten. // --- Daten --- // Liste der Planeten in der korrekten Zielreihenfolge (links nach rechts).
+
+    this.planets = [
+      "merkur",
+      "venus",
+      "erde",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptun",
+    ]; // --- Konstanten für Anordnung und Skalierung ---
+
+    this.PLANET_SCALE = 0.08;
+    this.TARGET_Y = 300; // Feste Y-Koordinate der Ziellinie.
+    this.TARGET_X_START = 300; // Start-X-Koordinate der Ziellinie.
+    this.TARGET_X_SPACING = 85; // Horizontaler Abstand zwischen den Zielen.
   }
+  /**
+   * Lädt alle benötigten Assets (Bilder, Sounds etc.)
+   */
 
   preload() {
-    // Lade alle Assets für das Level
-    this.load.image("desk_bg", "assets/levelOne/levelOneBackground.png");
-    this.load.image("book", "assets/book.png");
-    this.load.image("pencil", "assets/pencil.png");
-    this.load.image("paper_stack", "assets/paper_stack.png");
-    this.load.image("mug", "assets/mug.png");
-    this.load.image("kosmos_symbol", "assets/kosmos_symbol.png");
-
-    // Füge Platzhalter für die transparenten Zielmarkierungen hinzu (optional)
-    // Wenn du keine separaten Bilder für die Ziele hast, kannst du die Originale als Alpha-Layer verwenden.
-    this.load.image("book_target", "assets/book.png");
-    this.load.image("pencil_target", "assets/pencil.png");
-    this.load.image("paper_target", "assets/paper_stack.png");
-    this.load.image("mug_target", "assets/mug.png");
+    // Hintergrundbild laden
+    this.load.image("desk_bg", "assets/levelOne/levelOneBackground.png"); // Alle Planetenbilder laden
+    this.load.image("merkur", "Assets/levelOne/Merkur.png");
+    this.load.image("venus", "Assets/levelOne/Venus.png");
+    this.load.image("erde", "Assets/levelOne/Erde.png");
+    this.load.image("mars", "Assets/levelOne/Mars.png");
+    this.load.image("jupiter", "Assets/levelOne/Jupiter.png");
+    this.load.image("saturn", "Assets/levelOne/Saturn.png");
+    this.load.image("uranus", "Assets/levelOne/Uranus.png");
+    this.load.image("neptun", "Assets/levelOne/Neptun.png");
   }
+  /**
+   * Erstellt die Spielobjekte und legt das Level an
+   */
 
   create() {
-    const { width, height } = this.sys.game.config;
+    const { width, height } = this.sys.game.config; // Hintergrundbild setzen und skalieren
 
-    // 1. Hintergrund setzen
     this.setFullScreenBackground("desk_bg");
 
     this.add
-      .text(width / 2, 20, "Level 1: Chaos im Universum", {
+      .text(width / 2, 20, "Level 1: Ordne die Planeten", {
         fontSize: "28px",
         fill: "#FFD700",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5); // Bereich, in dem die Planeten chaotisch starten
 
-    // 2. Kosmos Symbol (Ziel) verstecken
-    this.kosmosSymbol = this.add
-      .image(width / 2, height / 2, "kosmos_symbol")
-      .setScale(0.1)
-      .setVisible(false)
-      .setDepth(10); // Symbol liegt über allen anderen Objekten
-
-    // 3. Füge die geordneten Zielmarkierungen hinzu
-    // Die Koordinaten müssen zu deinem Hintergrundbild passen!
-    this.addTarget(280, 500, 0, "book_target");
-    this.addTarget(200, 300, 0, "pencil_target");
-    this.addTarget(400, 430, 0, "paper_target");
-    this.addTarget(500, 420, 0, "mug_target");
-
-    // 4. Füge die ziehbaren chaotischen Objekte hinzu (Startpositionen und Soll-Werte)
-    this.createChaosDraggable("book", 300, 500, 60, 1.2, 280, 500, 0);
-    this.createChaosDraggable("pencil", 200, 300, -30, 0.8, 200, 300, 0);
-    this.createChaosDraggable("paper_stack", 400, 450, -15, 1.0, 400, 430, 0);
-    this.createChaosDraggable("mug", 500, 400, 90, 0.9, 500, 420, 0);
-
-    // 5. Feedback-Text
+    const chaoticAreaY = 150;
+    const chaoticAreaHeight = 250; // Schleife zur Erstellung aller Ziele und Planeten
+    for (let i = 0; i < this.planets.length; i++) {
+      const planetKey = this.planets[i]; // Berechnung der Zielposition
+      const targetX = this.TARGET_X_START + i * this.TARGET_X_SPACING;
+      const targetY = this.TARGET_Y; // Zielmarkierung als schwacher, weißer Kreis hinzufügen
+      this.addTarget(targetX, targetY, this.PLANET_SCALE); // Zufällige Startposition im chaotischen Bereich
+      const startX = Phaser.Math.Between(50, width - 50);
+      const startY = Phaser.Math.Between(
+        chaoticAreaY,
+        chaoticAreaY + chaoticAreaHeight
+      ); // Ziehbares Planetenobjekt erstellen
+      this.createChaosDraggable(
+        planetKey,
+        startX,
+        startY,
+        this.PLANET_SCALE,
+        targetX,
+        targetY
+      );
+    } // Feedback-Text (Ordnungsstatus) am unteren Rand
     this.feedbackText = this.add
       .text(
         width / 2,
@@ -63,172 +85,172 @@ class level1scene extends Phaser.Scene {
         `Ordnung: ${this.orderAchieved}/${this.chaosCount}`,
         {
           fontSize: "24px",
-          fill: "#00FF00",
-          backgroundColor: "#1E1E1E",
+          fill: "#FFD700",
         }
       )
       .setOrigin(0.5)
-      .setDepth(10);
+      .setDepth(10); // Kurze Startnachricht anzeigen
 
     this.showMessage(
-      "Bringe die Unordnung in Ordnung. Ziehe und klicke auf die chaotischen Objekte!",
+      "Bringe die Planeten in ihre korrekte\nReihenfolge und ziehe sie auf die Ziellinie!",
       4000
     );
-  }
-
-  // ----------------------------------------------------------------------------------
-  // HILFSFUNKTIONEN
-  // ----------------------------------------------------------------------------------
+  } // ---------------------------------------------------------------------------------- // HILFSFUNKTIONEN // ----------------------------------------------------------------------------------
+  /**
+   * Skaliert ein Bild, um den gesamten Bildschirm auszufüllen (Hintergrund).
+   * @param {string} key - Der Asset-Key des Hintergrundbildes.
+   */
 
   setFullScreenBackground(key) {
-    const gameWidth = this.sys.game.config.width;
-    const gameHeight = this.sys.game.config.height;
+    const { width: gameWidth, height: gameHeight } = this.sys.game.config;
     const background = this.add.image(gameWidth / 2, gameHeight / 2, key);
-    background.setOrigin(0.5, 0.5);
+    background.setOrigin(0.5);
 
     const scaleX = gameWidth / background.width;
     const scaleY = gameHeight / background.height;
     const scale = Math.max(scaleX, scaleY);
     background.setScale(scale);
   }
+  /**
+   * Zeigt eine Debug-Nachricht in der Konsole an.
+   * @param {string} text - Die anzuzeigende Nachricht.
+   * @param {number} [duration=2000] - Dauer der Nachricht (wird hier ignoriert).
+   */
 
   showMessage(text, duration = 2000) {
     console.log("FEEDBACK: " + text);
-    // Hier könntest du eine sichtbare Textbox-Implementierung einfügen, falls gewünscht.
-  }
 
-  addTarget(x, y, rotationDeg, key) {
-    // Zeigt die Soll-Position und -Rotation leicht transparent an
-    this.add
-      .image(x, y, key)
-      .setAlpha(0.2)
-      .setScale(key.includes("pencil") ? 0.8 : 1.0) // Skalierung anpassen
-      .setRotation(Phaser.Math.DegToRad(rotationDeg));
-  }
+    const { width, height } = this.sys.game.config; // 1. Erstelle das Text-Objekt (zentral positioniert)
 
-  createChaosDraggable(
-    key,
-    startX,
-    startY,
-    startRot,
-    scale,
-    targetX,
-    targetY,
-    targetRot
-  ) {
+    const message = this.add
+      .text(
+        width / 2,
+        height / 4, // Mittig im Bild
+        text,
+        {
+          fontSize: "24px",
+          fill: "#FFD700",
+          align: "center",
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          padding: 10,
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(100); // Stelle sicher, dass es über allem anderen liegt // 2. Erstelle ein Tween (Animation), um es nach der Dauer auszublenden
+
+    this.tweens.add({
+      targets: message,
+      alpha: 0, // Transparenz auf 0 (unsichtbar)
+      ease: "Power1",
+      duration: 500, // Ausblende-Animation (0.5 Sekunden)
+      delay: duration, // Wartezeit, bevor die Ausblende-Animation startet
+      onComplete: () => {
+        message.destroy(); // Objekt nach der Animation löschen
+      },
+    });
+  }
+  /**
+   * Zeichnet die Zielmarkierung als schwachen, weißen Kreis.
+   * @param {number} x - X-Koordinate des Kreismittelpunkts.
+   * @param {number} y - Y-Koordinate des Kreismittelpunkts.
+   * @param {number} scale - Skalierungsfaktor zur Berechnung des Radius.
+   */
+
+  addTarget(x, y, scale) {
+    const baseRadius = 150; // Basisradius des Kreises
+    const radius = baseRadius * scale;
+    const graphics = this.add.graphics({ x: x, y: y });
+
+    graphics.fillStyle(0xffffff, 0.15); // Weiß mit 15% Deckkraft
+    graphics.fillCircle(0, 0, radius); // Kreis zeichnen
+
+    return graphics;
+  }
+  /**
+   * Erstellt ein ziehbares Planetenobjekt und richtet Drag-Events ein.
+   */
+
+  createChaosDraggable(key, startX, startY, scale, targetX, targetY) {
     const item = this.add
       .image(startX, startY, key)
-      .setInteractive({ draggable: true }) // Objekt kann gezogen werden
-      .setRotation(Phaser.Math.DegToRad(startRot))
+      .setInteractive({ draggable: true })
       .setScale(scale)
-      .setDepth(1); // Stellt sicher, dass das Objekt beim Ziehen sichtbar bleibt
+      .setDepth(1); // Speichern der Soll-Positionen und Status
 
-    // Speichere die Soll-Positionen (Target Values) im Objekt selbst
     item.setData({
       targetX: targetX,
       targetY: targetY,
-      targetRot: Phaser.Math.DegToRad(targetRot),
       isOrdered: false,
-    });
+    }); // Event-Listener für das Ziehen
 
-    // Event: Ziehen des Objekts
     item.on("drag", (pointer, dragX, dragY) => {
-      // Beim Ziehen nur die Position aktualisieren
       item.x = dragX;
       item.y = dragY;
-    });
+    }); // Event-Listener für das Ende des Ziehens
 
-    // Event: Rotation beim Klick (Pointerdown)
-    item.on("pointerdown", (pointer) => {
-      if (
-        !item.getData("isOrdered") &&
-        pointer.downElement.tagName === "CANVAS"
-      ) {
-        // Der Klick soll NUR die Rotation ändern, NICHT die Position.
-        // Wir müssen verhindern, dass dies ausgelöst wird, wenn der User beginnt zu ziehen.
-        // Da die Rotation so konfiguriert ist, dass sie nur mit dem Klick ausgelöst wird,
-        // ist das Problem oft, dass der Browser das Ziehen nicht von einem Klick unterscheidet.
-
-        // LÖSUNG: Wir nutzen ein einfaches Flag für die Rotation
-        if (pointer.primaryDown) {
-          // Stellt sicher, dass es der linke Mausklick ist
-          item.angle += 30; // Rotiere um 30 Grad pro Klick
-          this.checkOrder(item);
-        }
-      }
-    });
-
-    // Event: Prüfen, wenn das Ziehen beendet wird (Drag End)
     item.on("dragend", () => {
       this.checkOrder(item);
     });
 
-    // --- Zusätzlicher Trick zur Trennung von Klick und Drag ---
-    // Du brauchst einen Abstandhalter (z.B. 10 Pixel), damit der Klick nicht sofort zum Drag wird.
     this.input.dragDistanceThreshold = 10;
   }
+  /**
+   * Prüft, ob ein Objekt auf der korrekten Zielposition losgelassen wurde.
+   * @param {Phaser.GameObjects.Image} item - Das fallengelassene Planetenobjekt.
+   */
 
   checkOrder(item) {
-    if (item.getData("isOrdered")) return;
+    if (item.getData("isOrdered")) return; // Wenn bereits geordnet, nichts tun
 
     const tx = item.getData("targetX");
     const ty = item.getData("targetY");
-    const tr = item.getData("targetRot");
+    const POS_TOLERANCE = 35; // Toleranz in Pixeln. // Prüfen, ob die aktuelle Position innerhalb der Toleranz der Zielposition liegt
 
-    const POS_TOLERANCE = 35; // Toleranz für die Position in Pixeln
-    const ROT_TOLERANCE = 0.3; // Toleranz für die Rotation in Radian (ca. 17 Grad)
-
-    // 1. Position prüfen
     const posMatch =
       Math.abs(item.x - tx) < POS_TOLERANCE &&
       Math.abs(item.y - ty) < POS_TOLERANCE;
 
-    // 2. Rotation prüfen
-    const rotMatch = Math.abs(item.rotation - tr) < ROT_TOLERANCE;
-
-    // Wenn beides korrekt ist, wurde Ordnung hergestellt
-    if (posMatch && rotMatch) {
-      this.achieveOrder(item);
+    if (posMatch) {
+      this.achieveOrder(item); // Ordnung herstellen
     }
   }
+  /**
+   * Setzt ein Objekt in den geordneten Zustand (eingerastet).
+   * @param {Phaser.GameObjects.Image} item - Das Planetenobjekt.
+   */
 
   achieveOrder(item) {
     item.setData("isOrdered", true);
-    item.disableInteractive(); // Objekt ist fixiert
+    item.disableInteractive(); // Objekt kann nicht mehr gezogen werden // Optischer "Snap" auf die exakte Zielposition
 
-    // Visuelles Feedback
+    item.x = item.getData("targetX");
+    item.y = item.getData("targetY"); // Kurze Animation zur visuellen Bestätigung
+
     this.tweens.add({
       targets: item,
       alpha: 0.5,
       duration: 200,
       yoyo: true,
       onComplete: () => item.setAlpha(1),
-    });
+    }); // Status aktualisieren
 
     this.orderAchieved++;
     this.feedbackText.setText(
       `Ordnung: ${this.orderAchieved}/${this.chaosCount}`
-    );
+    ); // Prüfen, ob das Level abgeschlossen ist
 
     if (this.orderAchieved === this.chaosCount) {
       this.levelComplete();
     }
   }
+  /**
+   * Wird aufgerufen, wenn alle Planeten korrekt platziert wurden.
+   */
 
   levelComplete() {
     this.showMessage(
-      "Das Chaos ist gebannt! Das Symbol von Kosmos erscheint.",
+      "Das Chaos ist gebannt!\nDu hast die Planeten erfolgreich in\ndie richtige Umlaufbahn gebracht.",
       5000
     );
-
-    // Das versteckte Symbol sichtbar machen
-    this.kosmosSymbol.setVisible(true);
-
-    this.kosmosSymbol.setInteractive();
-    this.kosmosSymbol.once("pointerdown", () => {
-      this.showMessage("Übergang zu Level 2...", 3000);
-      // Hier würde der Übergang zur nächsten Szene erfolgen, z.B.:
-      // this.scene.start('Level2_NewPuzzle');
-    });
   }
 }
