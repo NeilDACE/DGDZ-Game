@@ -1,241 +1,239 @@
-// EgyptLevelScene.js (ohne Katze)
 class EgyptLevelScene extends Phaser.Scene {
   constructor() {
-    super("level2scene");
+    super("EgyptLevelScene");
   }
 
   preload() {
-    // Hintergrund / Wüste / Pyramiden
-    this.load.image("egypt_bg", "assets/leveltwo/backgroundCanvas.png");
+    // Background mit schwarzen Löchern
+    this.load.image(
+      "egypt_bg_puzzle",
+      "assets/leveltwo/backgroundCanvasfinish.png"
+    );
 
-    // Bau-Zonen (Steinblöcke)
-    this.load.image("zone_base", "assets/zone_base.png");
-    this.load.image("zone_mid", "assets/zone_mid.png");
-    this.load.image("zone_top", "assets/zone_top.png");
-
-    // Wand-Zonen für Hieroglyphen
-    this.load.image("zone_wall_left", "assets/zone_wall_left.png");
-    this.load.image("zone_wall_right", "assets/zone_wall_right.png");
-
-    // Steinblöcke
-    this.load.image("block_base", "assets/block_base.png");
-    this.load.image("block_mid", "assets/block_mid.png");
-    this.load.image("block_top", "assets/block_top.png");
-
-    // Hieroglyphen-Tafeln
-    this.load.image("glyph_sun", "assets/glyph_sun.png");
-    this.load.image("glyph_bird", "assets/glyph_bird.png");
-    this.load.image("glyph_ankh", "assets/glyph_ankh.png");
-
-    // Sandsturm (Overlay)
+    // WICHTIG: diese Keys müssen exakt zu deinen Dateien passen!
+    this.load.image("piece_nose", "assets/leveltwo/nase.png");
+    this.load.image("piece_door", "assets/leveltwo/saeule.png");
+    this.load.image("piece_crown", "assets/leveltwo/pflanze.png");
+    this.load.image("piece_stone", "assets/leveltwo/stone.png");
+    this.load.image("piece_obelisk", "assets/leveltwo/obeliskSpitze.png");
+    this.load.image("piece_symbol", "assets/leveltwo/symbol.png");
+    this.load.image("piece_camel", "assets/leveltwo/camel.png");
+    this.load.image("piece_mensch", "assets/leveltwo/mensch.png");
+    // optional: Sand-Overlay
     this.load.image("sand_overlay", "assets/sand_overlay.png");
   }
 
   create() {
-    // Hintergrund
-    this.add.image(400, 300, "egypt_bg").setDepth(0);
+    document.getElementById("bodyId").classList.toggle("level2-background");
+    document
+      .getElementById("game-container")
+      .classList.toggle("level2-game-container");
+    // === Hintergrund ===
+    const bg = this.add.image(500, 300, "egypt_bg_puzzle").setDepth(0);
 
-    // Sandsturm-Overlay
+    let scale = Math.max(
+      this.cameras.main.width / bg.width,
+      this.cameras.main.height / bg.height
+    );
+    bg.setScale(scale);
+
+    // === Sandsturm-Overlay (optional) ===
     this.sandOverlay = this.add
-      .image(400, 300, "sand_overlay")
-      .setDepth(10)
+      .image(500, 300, "sand_overlay")
+      .setDepth(20)
       .setAlpha(0);
 
-    // Bau-Zonen für Pyramide
-    this.zones = [];
-    this.zones.push(
-      this.createZone(250, 420, "zone_base", "block_base", "Fundament")
-    );
-    this.zones.push(
-      this.createZone(400, 330, "zone_mid", "block_mid", "Mitte")
-    );
-    this.zones.push(
-      this.createZone(550, 250, "zone_top", "block_top", "Spitze")
-    );
+    // === Zielpositionen der Teile (x/y musst du ggf. anpassen) ===
+    this.targets = [
+      {
+        id: "nose",
+        x: 720,
+        y: 170,
+        radius: 50,
+        offsetX: 30,
+        offsetY: 9,
+        targetScale: 0.65,
+      },
+      {
+        id: "door",
+        x: 615,
+        y: 410,
+        radius: 50,
+        offsetX: 9,
+        offsetY: 24,
+        targetScale: 0.65,
+      },
+      {
+        id: "crown",
+        x: 450,
+        y: 490,
+        radius: 50,
+        offsetX: -12,
+        offsetY: 32,
+        targetScale: 0.7,
+      },
+      {
+        id: "stone",
+        x: 240,
+        y: 520,
+        radius: 50,
+        offsetX: -22,
+        offsetY: 40,
+        targetScale: 0.63,
+      },
+      {
+        id: "obelisk",
+        x: 125,
+        y: 100,
+        radius: 50,
+        offsetX: -11,
+        offsetY: -23,
+        targetScale: 0.69,
+      },
+      {
+        id: "symbol",
+        x: 145,
+        y: 200,
+        radius: 50,
+        offsetX: -21,
+        offsetY: 18,
+        targetScale: 0.55,
+      },
+      {
+        id: "camel",
+        x: 450,
+        y: 350,
+        radius: 50,
+        offsetX: 0,
+        offsetY: 5,
+        targetScale: 0.1,
+      },
+      {
+        id: "mensch",
+        x: 380,
+        y: 360,
+        radius: 50,
+        offsetX: 0,
+        offsetY: 0,
+        targetScale: 0.05,
+      },
+    ];
 
-    // Wand-Zonen
-    this.zones.push(
-      this.createZone(100, 220, "zone_wall_left", "wall_left", "Grabwand L")
-    );
-    this.zones.push(
-      this.createZone(700, 220, "zone_wall_right", "wall_right", "Grabwand R")
-    );
+    // === Puzzle-Teile ===
+    this.pieces = [];
 
-    // Items erstellen
-    this.items = [];
-    this.createBlocks();
-    this.createGlyphs();
+    // z.B. alle auf 0.5 verkleinern
+    this.createPiece("nose", "piece_nose", 150, 520, 0.5);
+    this.createPiece("door", "piece_door", 400, 520, 0.5);
+    this.createPiece("crown", "piece_crown", 750, 400, 0.5);
+    this.createPiece("stone", "piece_stone", 650, 350, 0.5);
+    this.createPiece("obelisk", "piece_obelisk", 900, 520, 0.5);
+    this.createPiece("symbol", "piece_symbol", 600, 200, 0.5);
+    this.createPiece("camel", "piece_camel", 500, 100, 0.1);
+    this.createPiece("mensch", "piece_mensch", 600, 100, 0.05);
 
-    // Drag & Drop
-    this.input.setDraggable(this.items);
+    // WICHTIG: KEIN this.input.setDraggable(this.pieces); hier!
+    // Das machen wir direkt in createPiece() für jedes Sprite.
 
-    this.input.on("dragstart", (pointer, item) => {
-      if (!item.placed) item.setDepth(5);
+    // Drag-Events
+    this.input.on("dragstart", (pointer, piece) => {
+      if (piece.placed) return;
+      piece.setDepth(10);
+      piece.setScale(piece.baseScale * 1.0);
     });
 
-    this.input.on("drag", (p, item, dragX, dragY) => {
-      if (!item.placed) {
-        item.x = dragX;
-        item.y = dragY;
-      }
+    this.input.on("drag", (pointer, piece, dragX, dragY) => {
+      if (piece.placed) return;
+      piece.x = dragX;
+      piece.y = dragY;
     });
 
-    this.input.on("dragend", (p, item) => {
-      if (!item.placed) this.handleDrop(item);
+    this.input.on("dragend", (pointer, piece) => {
+      if (piece.placed) return;
+      this.tryPlacePiece(piece);
     });
 
-    // Sandsturm-Event
-    this.time.addEvent({
-      delay: 7000,
-      callback: this.sandStorm,
-      callbackScope: this,
-      loop: true,
-    });
-
-    // Fortschritt
-    this.correctCount = 0;
-    this.correctText = this.add
-      .text(400, 20, "Korrekt platziert: 0", {
-        fontSize: "20px",
+    this.infoText = this.add
+      .text(500, 40, "Level 2: Setze die fehlenden Teile ein", {
+        fontSize: "24px",
         color: "#ffffff",
       })
       .setOrigin(0.5)
-      .setDepth(20);
+      .setDepth(30);
+
+    this.completed = false;
   }
 
-  // Zonen erstellen
-  createZone(x, y, textureKey, expectedType, label) {
-    const zone = this.add.sprite(x, y, textureKey).setDepth(1);
-    zone.expectedType = expectedType;
+  // --------- EIN TEIL ERSTELLEN ---------
+  createPiece(id, textureKey, startX, startY, scale = 1) {
+    const sprite = this.add.sprite(startX, startY, textureKey).setDepth(5);
 
-    this.add
-      .text(x, y + zone.height / 2 + 12, label, {
-        fontSize: "14px",
-        color: "#ffffcc",
-      })
-      .setOrigin(0.5)
-      .setDepth(2);
-
-    return zone;
-  }
-
-  // Steinblöcke erstellen
-  createBlocks() {
-    const blockDefinitions = [
-      { key: "block_base", type: "block_base" },
-      { key: "block_mid", type: "block_mid" },
-      { key: "block_top", type: "block_top" },
-    ];
-
-    blockDefinitions.forEach((def) => {
-      const x = Phaser.Math.Between(250, 550);
-      const y = Phaser.Math.Between(480, 560);
-      const sprite = this.add.sprite(x, y, def.key).setDepth(3);
-
-      sprite.itemType = def.type;
-      sprite.startX = x;
-      sprite.startY = y;
-      sprite.placed = false;
-
-      this.items.push(sprite);
-    });
-  }
-
-  // Hieroglyphen erstellen
-  createGlyphs() {
-    const glyphDefinitions = [
-      { key: "glyph_sun", type: "wall_left" },
-      { key: "glyph_bird", type: "wall_left" },
-      { key: "glyph_ankh", type: "wall_right" },
-    ];
-
-    glyphDefinitions.forEach((def) => {
-      const x = Phaser.Math.Between(250, 550);
-      const y = Phaser.Math.Between(120, 220);
-      const sprite = this.add.sprite(x, y, def.key).setDepth(3);
-
-      sprite.itemType = def.type;
-      sprite.startX = x;
-      sprite.startY = y;
-      sprite.placed = false;
-
-      this.items.push(sprite);
-    });
-  }
-
-  // Drop-Logik
-  handleDrop(item) {
-    const itemBounds = item.getBounds();
-    let placedCorrect = false;
-
-    for (let zone of this.zones) {
-      const zoneBounds = zone.getBounds();
-
-      if (Phaser.Geom.Intersects.RectangleToRectangle(itemBounds, zoneBounds)) {
-        if (zone.expectedType === item.itemType) {
-          placedCorrect = true;
-          item.placed = true;
-
-          this.snapToZone(item, zone);
-
-          this.tweens.add({
-            targets: item,
-            scale: 1.1,
-            duration: 120,
-            yoyo: true,
-          });
-
-          this.correctCount++;
-          this.correctText.setText("Korrekt platziert: " + this.correctCount);
-        }
-      }
+    if (!sprite) {
+      console.warn("Sprite konnte nicht erstellt werden für", textureKey);
+      return;
     }
 
-    if (!placedCorrect) {
+    sprite.pieceId = id;
+    sprite.startX = startX;
+    sprite.startY = startY;
+    sprite.placed = false;
+
+    sprite.baseScale = scale;
+    sprite.setScale(scale); // <<< Größe setzen
+
+    sprite.setInteractive({ cursor: "pointer" });
+    this.input.setDraggable(sprite);
+
+    this.pieces.push(sprite);
+    return sprite;
+  }
+
+  // --------- PLATZIER-LOGIK ---------
+  tryPlacePiece(piece) {
+    const target = this.targets.find((t) => t.id === piece.pieceId);
+    if (!target) return;
+
+    const dist = Phaser.Math.Distance.Between(
+      piece.x,
+      piece.y,
+      target.x,
+      target.y
+    );
+
+    const snapTolerance = target.radius; // oder * 1.2, wenn es leichter sein soll
+
+    if (dist <= snapTolerance) {
+      // Feinkorrektur beim Einrasten
+      const ox = target.offsetX || 0;
+      const oy = target.offsetY || 0;
+
+      piece.x = target.x + ox;
+      piece.y = target.y + oy;
+      piece.placed = true;
+      piece.setDepth(2);
+
+      const finalScale = target.targetScale || piece.baseScale;
+      piece.baseScale = finalScale; // für spätere Tweens
+      piece.setScale(finalScale);
+
       this.tweens.add({
-        targets: item,
-        x: item.startX,
-        y: item.startY,
-        duration: 200,
-        onComplete: () => item.setDepth(3),
+        targets: piece,
+        scale: finalScale * 1.1,
+        duration: 120,
+        yoyo: true,
       });
+
+      this.checkCompleted();
     } else {
-      item.setDepth(2);
+      // zurück
+      this.tweens.add({
+        targets: piece,
+        x: piece.startX,
+        y: piece.startY,
+        scale: piece.baseScale,
+        duration: 200,
+        onComplete: () => piece.setDepth(5),
+      });
     }
-  }
-
-  snapToZone(item, zone) {
-    const areaWidth = zone.width * 0.5;
-    const areaHeight = zone.height * 0.5;
-
-    const offsetX = Phaser.Math.Between(-areaWidth / 2, areaWidth / 2);
-    const offsetY = Phaser.Math.Between(-areaHeight / 2, areaHeight / 2);
-
-    item.x = zone.x + offsetX;
-    item.y = zone.y + offsetY;
-  }
-
-  // Sandsturm
-  sandStorm() {
-    // Overlay
-    this.tweens.add({
-      targets: this.sandOverlay,
-      alpha: 0.7,
-      duration: 200,
-      yoyo: true,
-      hold: 400,
-    });
-
-    // leichtes Verschieben
-    this.items.forEach((item) => {
-      if (!item.placed) {
-        this.tweens.add({
-          targets: item,
-          x: item.x + Phaser.Math.Between(-10, 10),
-          y: item.y + Phaser.Math.Between(-5, 5),
-          duration: 300,
-        });
-      }
-    });
   }
 }

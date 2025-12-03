@@ -4,7 +4,7 @@ const config = {
   height: 600,
   parent: "game-container",
   backgroundColor: "#000000",
-  scene: [StartScene, StoryScene, level1scene],
+  scene: [EgyptLevelScene],
 };
 
 const game = new Phaser.Game(config);
