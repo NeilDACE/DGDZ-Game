@@ -1,3 +1,7 @@
+/**
+ * Main scene for Level 2: The Egyptian Puzzle.
+ * Players must drag puzzle pieces into their correct target slots on the background image.
+ */
 class LevelTwoScene extends Phaser.Scene {
   /** @type {Phaser.Sound.BaseSound | null} */
   music = null;
@@ -7,8 +11,14 @@ class LevelTwoScene extends Phaser.Scene {
   pieces = [];
   /** @type {Phaser.GameObjects.Text} */
   infoText;
+  /** @type {Phaser.GameObjects.Text} */
+  progressText;
   /** @type {boolean} */
   completed = false;
+  /** @type {number} */
+  placedCount = 0;
+  /** @type {number} */
+  totalPieces = 0;
   /** @type {{id: string, x: number, y: number, radius: number, offsetX: number, offsetY: number, targetScale: number}[]} */
   targets;
 
@@ -145,12 +155,16 @@ class LevelTwoScene extends Phaser.Scene {
     // === Puzzle Pieces ===
     this._createPiece("nose", "piece_nose", 150, 520, 0.5);
     this._createPiece("door", "piece_door", 400, 520, 0.5);
-    this._createPiece("crown", "piece_crown", 750, 400, 0.5);
+    this._createPiece("crown", "piece_crown", 200, 170, 0.5);
     this._createPiece("stone", "piece_stone", 650, 350, 0.5);
     this._createPiece("obelisk", "piece_obelisk", 900, 520, 0.5);
     this._createPiece("symbol", "piece_symbol", 600, 200, 0.5);
     this._createPiece("camel", "piece_camel", 500, 100, 0.1);
-    this._createPiece("human", "piece_human", 600, 100, 0.05);
+    this._createPiece("human", "piece_human", 900, 220, 0.05);
+
+    // Gesamtanzahl für Fortschrittsanzeige
+    this.totalPieces = this.pieces.length;
+    this.placedCount = 0;
 
     // === Drag Events ===
     this.input.on("dragstart", (pointer, piece) => {
@@ -170,7 +184,7 @@ class LevelTwoScene extends Phaser.Scene {
       this._tryPlacePiece(piece);
     });
 
-    // Info Text
+    // Info Text (Titel)
     this.infoText = this.add
       .text(width / 2, 40, "Level 2: Setze die fehlenden Teile ein", {
         fontSize: "24px",
@@ -178,10 +192,21 @@ class LevelTwoScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setDepth(30);
+
+    // Fortschrittsanzeige: unten mittig
+    this.progressText = this.add
+      .text(width / 2, height - 40, "", {
+        fontSize: "24px",
+        color: "#ffffff",
+      })
+      .setOrigin(0.5)
+      .setDepth(30);
+
+    this._updateProgressText();
   }
 
   // ----------------------------------------------------------------------------------
-  // PRIVATE HELPER METHODS
+  // PRIVATE HELFERMETHODEN
   // ----------------------------------------------------------------------------------
 
   /**
@@ -231,7 +256,7 @@ class LevelTwoScene extends Phaser.Scene {
     sprite.baseScale = scale;
     sprite.setScale(scale);
 
-    // 🔥 Pixelgenaues Greifen aktiviert!
+    // Pixelgenaues Greifen
     sprite.setInteractive({
       pixelPerfect: true,
       alphaTolerance: 1,
@@ -271,6 +296,10 @@ class LevelTwoScene extends Phaser.Scene {
       piece.baseScale = finalScale;
       piece.setScale(finalScale);
 
+      // Zähler erhöhen & Anzeige aktualisieren
+      this.placedCount++;
+      this._updateProgressText();
+
       this.tweens.add({
         targets: piece,
         scale: finalScale * 1.1,
@@ -280,7 +309,7 @@ class LevelTwoScene extends Phaser.Scene {
 
       this._checkCompleted();
     } else {
-      // Reset to start
+      // Zurück zur Startposition
       this.tweens.add({
         targets: piece,
         x: piece.startX,
@@ -290,6 +319,16 @@ class LevelTwoScene extends Phaser.Scene {
         onComplete: () => piece.setDepth(5),
       });
     }
+  }
+
+  /**
+   * Updates the progress text showing how many pieces are placed.
+   */
+  _updateProgressText() {
+    if (!this.progressText) return;
+    this.progressText.setText(
+      `Ordnung: ${this.placedCount}/${this.totalPieces}`
+    );
   }
 
   /**
