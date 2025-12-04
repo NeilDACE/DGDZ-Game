@@ -1,16 +1,36 @@
+/**
+ * Main scene for Level 2: The Egyptian Puzzle.
+ * Players must drag puzzle pieces into their correct target slots on the background image.
+ */
 class LevelTwoScene extends Phaser.Scene {
+  /** @type {Phaser.Sound.BaseSound | null} */
+  music = null;
+  /** @type {Phaser.GameObjects.Image} */
+  sandOverlay;
+  /** @type {Phaser.GameObjects.Sprite[]} */
+  pieces = [];
+  /** @type {Phaser.GameObjects.Text} */
+  infoText;
+  /** @type {boolean} */
+  completed = false;
+  /** @type {{id: string, x: number, y: number, radius: number, offsetX: number, offsetY: number, targetScale: number}[]} */
+  targets;
+
   constructor() {
     super("levelTwoScene");
   }
 
+  /**
+   * Loads all necessary assets (images and audio).
+   */
   preload() {
-    // Hintergrund mit Puzzle-Löchern
+    // Background with puzzle slots
     this.load.image(
       "egypt_bg_puzzle",
       "assets/leveltwo/backgroundCanvasfinish.png"
     );
 
-    // Puzzle-Teile
+    // Puzzle pieces (Asset Keys -> Original Filenames)
     this.load.image("piece_nose", "assets/leveltwo/nase.png");
     this.load.image("piece_door", "assets/leveltwo/saeule.png");
     this.load.image("piece_crown", "assets/leveltwo/pflanze.png");
@@ -18,34 +38,36 @@ class LevelTwoScene extends Phaser.Scene {
     this.load.image("piece_obelisk", "assets/leveltwo/obeliskSpitze.png");
     this.load.image("piece_symbol", "assets/leveltwo/symbol.png");
     this.load.image("piece_camel", "assets/leveltwo/camel.png");
-    this.load.image("piece_mensch", "assets/leveltwo/mensch.png");
+    this.load.image("piece_human", "assets/leveltwo/mensch.png"); // Changed key to 'piece_human'
 
-    // optional
+    // Optional overlays/audio
     this.load.image("sand_overlay", "assets/sand_overlay.png");
+    this.load.audio("bg_3_music", "assets/audio/level-two-background-sound.mp3");
   }
 
+  /**
+   * Creates the game objects, sets up drag events, and starts music.
+   */
   create() {
-    document.getElementById("bodyId").classList.toggle("level2-background");
-    document
-      .getElementById("game-container")
-      .classList.toggle("level2-game-container");
+    this._setupHTMLClasses();
+    this._startBackgroundMusic();
 
-    // === Hintergrund ===
-    const bg = this.add.image(500, 300, "egypt_bg_puzzle").setDepth(0);
+    const { width, height } = this.scale;
 
-    let scale = Math.max(
-      this.cameras.main.width / bg.width,
-      this.cameras.main.height / bg.height
-    );
+    // === Background Setup ===
+    const bg = this.add
+      .image(width / 2, height / 2, "egypt_bg_puzzle")
+      .setDepth(0);
+    let scale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(scale);
 
     // === Sand Overlay ===
     this.sandOverlay = this.add
-      .image(500, 300, "sand_overlay")
+      .image(width / 2, height / 2, "sand_overlay")
       .setDepth(20)
       .setAlpha(0);
 
-    // === Zielpositionen ===
+    // === Target Positions (ID muss mit pieceId übereinstimmen) ===
     this.targets = [
       {
         id: "nose",
@@ -111,26 +133,25 @@ class LevelTwoScene extends Phaser.Scene {
         targetScale: 0.1,
       },
       {
-        id: "mensch",
+        id: "human",
         x: 380,
         y: 360,
         radius: 50,
         offsetX: 0,
         offsetY: 0,
         targetScale: 0.05,
-      },
+      }, // Changed ID to 'human'
     ];
 
-    // === Puzzle-Teile ===
-    this.pieces = [];
-    this.createPiece("nose", "piece_nose", 150, 520, 0.5);
-    this.createPiece("door", "piece_door", 400, 520, 0.5);
-    this.createPiece("crown", "piece_crown", 750, 400, 0.5);
-    this.createPiece("stone", "piece_stone", 650, 350, 0.5);
-    this.createPiece("obelisk", "piece_obelisk", 900, 520, 0.5);
-    this.createPiece("symbol", "piece_symbol", 600, 200, 0.5);
-    this.createPiece("camel", "piece_camel", 500, 100, 0.1);
-    this.createPiece("mensch", "piece_mensch", 600, 100, 0.05);
+    // === Puzzle Pieces ===
+    this._createPiece("nose", "piece_nose", 150, 520, 0.5);
+    this._createPiece("door", "piece_door", 400, 520, 0.5);
+    this._createPiece("crown", "piece_crown", 750, 400, 0.5);
+    this._createPiece("stone", "piece_stone", 650, 350, 0.5);
+    this._createPiece("obelisk", "piece_obelisk", 900, 520, 0.5);
+    this._createPiece("symbol", "piece_symbol", 600, 200, 0.5);
+    this._createPiece("camel", "piece_camel", 500, 100, 0.1);
+    this._createPiece("human", "piece_human", 600, 100, 0.05); // Changed ID to 'human'
 
     // === Drag Events ===
     this.input.on("dragstart", (pointer, piece) => {
@@ -147,29 +168,61 @@ class LevelTwoScene extends Phaser.Scene {
 
     this.input.on("dragend", (pointer, piece) => {
       if (piece.placed) return;
-      this.tryPlacePiece(piece);
+      this._tryPlacePiece(piece);
     });
 
     // Info Text
     this.infoText = this.add
-      .text(500, 40, "Level 2: Setze die fehlenden Teile ein", {
+      .text(width / 2, 40, "Level 2: Setze die fehlenden Teile ein", {
         fontSize: "24px",
         color: "#ffffff",
       })
       .setOrigin(0.5)
       .setDepth(30);
-
-    this.completed = false;
   }
 
-  // === Puzzle-Teil erstellen ===
-  createPiece(id, textureKey, startX, startY, scale = 1) {
+  // ----------------------------------------------------------------------------------
+  // PRIVATE HELPER METHODS
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * Toggles the necessary HTML classes for the scene.
+   */
+  _setupHTMLClasses() {
+    document.getElementById("bodyId").classList.toggle("level2-background");
+    document
+      .getElementById("game-container")
+      .classList.toggle("level2-game-container");
+  }
+
+  /**
+   * Starts the scene's background music.
+   */
+  _startBackgroundMusic() {
+    this.music = this.sound.add("bg_3_music", {
+      volume: 0.4,
+      loop: true,
+    });
+    this.music.play();
+  }
+
+  /**
+   * Creates a draggable puzzle piece sprite.
+   * @param {string} id - Unique identifier for the piece (must match target ID).
+   * @param {string} textureKey - Key of the loaded texture.
+   * @param {number} startX - Initial X position.
+   * @param {number} startY - Initial Y position.
+   * @param {number} scale - Initial scale.
+   * @returns {Phaser.GameObjects.Sprite} The created sprite object.
+   */
+  _createPiece(id, textureKey, startX, startY, scale = 1) {
     const sprite = this.add.sprite(startX, startY, textureKey).setDepth(5);
     if (!sprite) {
-      console.warn("Sprite konnte nicht erstellt werden:", textureKey);
+      console.warn("Sprite could not be created:", textureKey);
       return;
     }
 
+    // Store custom properties on the sprite
     sprite.pieceId = id;
     sprite.startX = startX;
     sprite.startY = startY;
@@ -185,8 +238,12 @@ class LevelTwoScene extends Phaser.Scene {
     return sprite;
   }
 
-  // === Versuchen, ein Teil zu platzieren ===
-  tryPlacePiece(piece) {
+  /**
+   * Attempts to place a puzzle piece into its correct target slot.
+   * If the distance is within the target radius, it snaps the piece into place.
+   * @param {Phaser.GameObjects.Sprite} piece - The dragged puzzle piece.
+   */
+  _tryPlacePiece(piece) {
     const target = this.targets.find((t) => t.id === piece.pieceId);
     if (!target) return;
 
@@ -201,16 +258,19 @@ class LevelTwoScene extends Phaser.Scene {
       const ox = target.offsetX || 0;
       const oy = target.offsetY || 0;
 
+      // Snap to the target position (with offset)
       piece.x = target.x + ox;
       piece.y = target.y + oy;
 
       piece.placed = true;
       piece.setDepth(2);
+      piece.disableInteractive(); // Disable further dragging
 
       const finalScale = target.targetScale || piece.baseScale;
       piece.baseScale = finalScale;
       piece.setScale(finalScale);
 
+      // Placement effect
       this.tweens.add({
         targets: piece,
         scale: finalScale * 1.1,
@@ -218,8 +278,9 @@ class LevelTwoScene extends Phaser.Scene {
         yoyo: true,
       });
 
-      this.checkCompleted();
+      this._checkCompleted();
     } else {
+      // Return to start position
       this.tweens.add({
         targets: piece,
         x: piece.startX,
@@ -231,8 +292,10 @@ class LevelTwoScene extends Phaser.Scene {
     }
   }
 
-  // === Prüfen, ob alles fertig ist ===
-  checkCompleted() {
+  /**
+   * Checks if all puzzle pieces have been placed and initiates level transition if complete.
+   */
+  _checkCompleted() {
     if (this.completed) return;
 
     const allPlaced = this.pieces.every((p) => p.placed);
@@ -240,10 +303,15 @@ class LevelTwoScene extends Phaser.Scene {
     if (allPlaced) {
       this.completed = true;
 
-      // optionaler Effekt
+      // Stop music before transition
+      if (this.music) {
+        this.music.stop();
+      }
+
+      // Optional effect
       this.cameras.main.flash(300, 255, 255, 255);
 
-      // Level 3 starten
+      // Transition to Level 3
       this.time.delayedCall(800, () => {
         this.scene.start("levelThreeScene");
       });

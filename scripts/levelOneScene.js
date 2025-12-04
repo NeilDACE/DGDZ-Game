@@ -9,31 +9,42 @@ class LevelOneScene extends Phaser.Scene {
     feedbackText;
 
     /**
-     * Constants for the scene configuration.
+     * @type {Phaser.Sound.BaseSound | null}
      */
+    music = null; 
+
+    // --- CONFIGURATION CONSTANTS ---
+    
+    /** @type {number} */
     PLANET_SCALE = 0.08;
+    /** @type {number} */
     TARGET_Y = 300; // Fixed Y-coordinate for the target line.
+    /** @type {number} */
     TARGET_X_START = 300; // Starting X-coordinate for the targets.
+    /** @type {number} */
     TARGET_X_SPACING = 85; // Horizontal spacing between targets.
+    /** @type {number} */
+    POS_TOLERANCE = 35; // Tolerance radius for dropping an item.
     
     /**
-     * List of planets in the correct target order (left to right).
+     * List of planets in the correct target order (left to right) using asset keys.
      */
-    planets = [
-        "merkur",
+    planetKeys = [
+        "mercury",
         "venus",
-        "erde",
+        "earth",
         "mars",
         "jupiter",
         "saturn",
         "uranus",
-        "neptun",
+        "neptune",
     ];
     
-    /**
-     * Game state variables.
-     */
-    chaosCount = 8; // Total number of planets.
+    // --- GAME STATE VARIABLES ---
+    
+    /** @type {number} */
+    totalChaos = 8; // Total number of planets.
+    /** @type {number} */
     orderAchieved = 0; // Counter for correctly placed planets.
 
     constructor() {
@@ -41,18 +52,23 @@ class LevelOneScene extends Phaser.Scene {
     }
 
     /**
-     * Loads all necessary assets (images, sounds, etc.).
+     * Loads all necessary assets (images, audio, etc.).
      */
     preload() {
         this.load.image("desk_bg", "assets/level-one/background.png");
-        this.load.image("merkur", "assets/level-one/planets/merkur.png");
+        
+        // Load planet assets (using standard English keys for variables, but original file names for path)
+        this.load.image("mercury", "assets/level-one/planets/merkur.png");
         this.load.image("venus", "assets/level-one/planets/venus.png");
-        this.load.image("erde", "assets/level-one/planets/earth.png");
+        this.load.image("earth", "assets/level-one/planets/earth.png");
         this.load.image("mars", "assets/level-one/planets/mars.png");
         this.load.image("jupiter", "assets/level-one/planets/jupiter.png");
         this.load.image("saturn", "assets/level-one/planets/saturn.png");
         this.load.image("uranus", "assets/level-one/planets/uranus.png");
-        this.load.image("neptun", "assets/level-one/planets/neptun.png");
+        this.load.image("neptune", "assets/level-one/planets/neptun.png");
+        
+        // Load Background Music
+        this.load.audio("bg_2_music", "assets/audio/level-one-background-sound.mp3");
     }
 
     /**
@@ -63,6 +79,7 @@ class LevelOneScene extends Phaser.Scene {
         const { width } = this.sys.game.config;
 
         this.setFullScreenBackground("desk_bg");
+        this._startBackgroundMusic();
 
         this.add
             .text(width / 2, 20, "Level 1: Ordne die Planeten", {
@@ -74,14 +91,14 @@ class LevelOneScene extends Phaser.Scene {
         this._addTargetsAndPlanets();
         this._addFeedbackText();
         
-        this.showMessage(
+        this._showMessage(
             "Bringe die Planeten in ihre korrekte\nReihenfolge und ziehe sie auf die Ziellinie!",
             4000
         );
     }
 
     // ----------------------------------------------------------------------------------
-    // PRIVATE HELPER METHODS (Extracted from create for optimization)
+    // PRIVATE HELPER METHODS 
     // ----------------------------------------------------------------------------------
 
     /**
@@ -95,6 +112,17 @@ class LevelOneScene extends Phaser.Scene {
     }
 
     /**
+     * Starts the scene's background music.
+     */
+    _startBackgroundMusic() {
+        this.music = this.sound.add("bg_2_music", {
+            volume: 0.4,
+            loop: true,
+        });
+        this.music.play();
+    }
+
+    /**
      * Creates the target markers and the chaotic, draggable planet objects.
      */
     _addTargetsAndPlanets() {
@@ -102,14 +130,14 @@ class LevelOneScene extends Phaser.Scene {
         const chaoticAreaY = 150;
         const chaoticAreaHeight = 250;
 
-        for (let i = 0; i < this.planets.length; i++) {
-            const planetKey = this.planets[i];
+        for (let i = 0; i < this.planetKeys.length; i++) {
+            const planetKey = this.planetKeys[i];
             
             // Calculate target position
             const targetX = this.TARGET_X_START + i * this.TARGET_X_SPACING;
             const targetY = this.TARGET_Y;
             
-            this.addTarget(targetX, targetY, this.PLANET_SCALE);
+            this._addTarget(targetX, targetY, this.PLANET_SCALE);
 
             // Calculate random starting position in the chaotic area
             const startX = Phaser.Math.Between(50, width - 50);
@@ -118,7 +146,7 @@ class LevelOneScene extends Phaser.Scene {
                 chaoticAreaY + chaoticAreaHeight
             );
 
-            this.createChaosDraggable(
+            this._createChaosDraggable(
                 planetKey,
                 startX,
                 startY,
@@ -138,7 +166,7 @@ class LevelOneScene extends Phaser.Scene {
             .text(
                 width / 2,
                 height - 30,
-                `Ordnung: ${this.orderAchieved}/${this.chaosCount}`,
+                `Ordnung: ${this.orderAchieved}/${this.totalChaos}`,
                 {
                     fontSize: "24px",
                     fill: "#FFD700",
@@ -147,9 +175,127 @@ class LevelOneScene extends Phaser.Scene {
             .setOrigin(0.5)
             .setDepth(10);
     }
+    
+    /**
+     * Draws the target marker as a faint white circle.
+     * @param {number} x - X-coordinate of the circle center.
+     * @param {number} y - Y-coordinate of the circle center.
+     * @param {number} scale - Scaling factor to calculate the radius.
+     * @returns {Phaser.GameObjects.Graphics} The created graphics object.
+     */
+    _addTarget(x, y, scale) {
+        const baseRadius = 150;
+        const radius = baseRadius * scale;
+        const graphics = this.add.graphics({ x: x, y: y });
 
+        graphics.fillStyle(0xffffff, 0.15);
+        graphics.fillCircle(0, 0, radius);
+
+        return graphics;
+    }
+
+    /**
+     * Creates a draggable planet object and sets up drag events.
+     * @param {string} key - Asset key for the planet.
+     * @param {number} startX - Initial X-position.
+     * @param {number} startY - Initial Y-position.
+     * @param {number} scale - Scale of the object.
+     * @param {number} targetX - Target X-position.
+     * @param {number} targetY - Target Y-position.
+     */
+    _createChaosDraggable(key, startX, startY, scale, targetX, targetY) {
+        const item = this.add
+            .image(startX, startY, key)
+            .setInteractive({ draggable: true })
+            .setScale(scale)
+            .setDepth(1);
+
+        item.setData({
+            targetX: targetX,
+            targetY: targetY,
+            isOrdered: false,
+        });
+
+        item.on("drag", (pointer, dragX, dragY) => {
+            item.x = dragX;
+            item.y = dragY;
+        });
+
+        item.on("dragend", () => {
+            this._checkOrder(item);
+        });
+
+        this.input.dragDistanceThreshold = 10;
+    }
+
+    /**
+     * Checks if an object was dropped on the correct target position.
+     * @param {Phaser.GameObjects.Image} item - The dropped planet object.
+     */
+    _checkOrder(item) {
+        if (item.getData("isOrdered")) return;
+
+        const tx = item.getData("targetX");
+        const ty = item.getData("targetY");
+        
+        const posMatch =
+            Math.abs(item.x - tx) < this.POS_TOLERANCE &&
+            Math.abs(item.y - ty) < this.POS_TOLERANCE;
+
+        if (posMatch) {
+            this._achieveOrder(item);
+        }
+    }
+
+    /**
+     * Sets an object to the ordered state (snapped into place).
+     * @param {Phaser.GameObjects.Image} item - The planet object.
+     */
+    _achieveOrder(item) {
+        item.setData("isOrdered", true);
+        item.disableInteractive();
+
+        item.x = item.getData("targetX");
+        item.y = item.getData("targetY");
+
+        this.tweens.add({
+            targets: item,
+            alpha: 0.5,
+            duration: 200,
+            yoyo: true,
+            onComplete: () => item.setAlpha(1),
+        });
+
+        this.orderAchieved++;
+        this.feedbackText.setText(
+            `Ordnung: ${this.orderAchieved}/${this.totalChaos}`
+        );
+
+        if (this.orderAchieved === this.totalChaos) {
+            this._levelComplete();
+        }
+    }
+
+    /**
+     * Called when all planets have been correctly placed.
+     */
+    _levelComplete() {
+        this._showMessage(
+            "Das Chaos ist gebannt!\nDu hast die Planeten erfolgreich in\ndie richtige Umlaufbahn gebracht.",
+            5000
+        );
+        
+        if (this.music) {
+            this.music.stop();
+        }
+        
+        setTimeout(() => {
+            this.scene.start("levelTwoScene");
+        }, 6000);
+    }
+    
     // ----------------------------------------------------------------------------------
-    // PUBLIC UTILITY FUNCTIONS
+    // PUBLIC UTILITY FUNCTIONS (Kept public for potential external use)
     // ----------------------------------------------------------------------------------
 
     /**
@@ -172,7 +318,7 @@ class LevelOneScene extends Phaser.Scene {
      * @param {string} text - The message to display.
      * @param {number} [duration=2000] - Duration before the fade-out starts.
      */
-    showMessage(text, duration = 2000) {
+    _showMessage(text, duration = 2000) {
         console.log("FEEDBACK: " + text);
 
         const { width, height } = this.sys.game.config;
@@ -202,119 +348,5 @@ class LevelOneScene extends Phaser.Scene {
                 message.destroy();
             },
         });
-    }
-
-    /**
-     * Draws the target marker as a faint white circle.
-     * @param {number} x - X-coordinate of the circle center.
-     * @param {number} y - Y-coordinate of the circle center.
-     * @param {number} scale - Scaling factor to calculate the radius.
-     * @returns {Phaser.GameObjects.Graphics} The created graphics object.
-     */
-    addTarget(x, y, scale) {
-        const baseRadius = 150;
-        const radius = baseRadius * scale;
-        const graphics = this.add.graphics({ x: x, y: y });
-
-        graphics.fillStyle(0xffffff, 0.15);
-        graphics.fillCircle(0, 0, radius);
-
-        return graphics;
-    }
-
-    /**
-     * Creates a draggable planet object and sets up drag events.
-     * @param {string} key - Asset key for the planet.
-     * @param {number} startX - Initial X-position.
-     * @param {number} startY - Initial Y-position.
-     * @param {number} scale - Scale of the object.
-     * @param {number} targetX - Target X-position.
-     * @param {number} targetY - Target Y-position.
-     */
-    createChaosDraggable(key, startX, startY, scale, targetX, targetY) {
-        const item = this.add
-            .image(startX, startY, key)
-            .setInteractive({ draggable: true })
-            .setScale(scale)
-            .setDepth(1);
-
-        item.setData({
-            targetX: targetX,
-            targetY: targetY,
-            isOrdered: false,
-        });
-
-        item.on("drag", (pointer, dragX, dragY) => {
-            item.x = dragX;
-            item.y = dragY;
-        });
-
-        item.on("dragend", () => {
-            this.checkOrder(item);
-        });
-
-        this.input.dragDistanceThreshold = 10;
-    }
-
-    /**
-     * Checks if an object was dropped on the correct target position.
-     * @param {Phaser.GameObjects.Image} item - The dropped planet object.
-     */
-    checkOrder(item) {
-        if (item.getData("isOrdered")) return;
-
-        const tx = item.getData("targetX");
-        const ty = item.getData("targetY");
-        const POS_TOLERANCE = 35;
-
-        const posMatch =
-            Math.abs(item.x - tx) < POS_TOLERANCE &&
-            Math.abs(item.y - ty) < POS_TOLERANCE;
-
-        if (posMatch) {
-            this.achieveOrder(item);
-        }
-    }
-
-    /**
-     * Sets an object to the ordered state (snapped into place).
-     * @param {Phaser.GameObjects.Image} item - The planet object.
-     */
-    achieveOrder(item) {
-        item.setData("isOrdered", true);
-        item.disableInteractive();
-
-        item.x = item.getData("targetX");
-        item.y = item.getData("targetY");
-
-        this.tweens.add({
-            targets: item,
-            alpha: 0.5,
-            duration: 200,
-            yoyo: true,
-            onComplete: () => item.setAlpha(1),
-        });
-
-        this.orderAchieved++;
-        this.feedbackText.setText(
-            `Ordnung: ${this.orderAchieved}/${this.chaosCount}`
-        );
-
-        if (this.orderAchieved === this.chaosCount) {
-            this.levelComplete();
-        }
-    }
-
-    /**
-     * Called when all planets have been correctly placed.
-     */
-    levelComplete() {
-        this.showMessage(
-            "Das Chaos ist gebannt!\nDu hast die Planeten erfolgreich in\ndie richtige Umlaufbahn gebracht.",
-            5000
-        );
-        setTimeout(() => {
-            this.scene.start("levelTwoScene");
-        }, 6000);
     }
 }

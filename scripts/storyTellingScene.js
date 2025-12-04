@@ -27,9 +27,23 @@ class StoryTellingScene extends Phaser.Scene {
    * @type {string}
    */
   fullText = "";
+  /**
+   * @type {Phaser.Sound.BaseSound | null}
+   */
+  music = null; // Stored reference for the music object
 
   constructor() {
     super("storyTellingScene");
+  }
+
+  /**
+   * Loads necessary assets, including background music.
+   */
+  preload() {
+    this.load.audio(
+      "bg_1_music",
+      "assets/audio/story-telling-background-sound.mp3"
+    );
   }
 
   /**
@@ -38,6 +52,13 @@ class StoryTellingScene extends Phaser.Scene {
   create() {
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
+
+    this.music = this.sound.add("bg_1_music", {
+      volume: 0.5,
+      loop: false,
+    });
+
+    this.music.play();
 
     const { width, height } = this.scale;
 
@@ -141,6 +162,9 @@ class StoryTellingScene extends Phaser.Scene {
       this.isDone = true;
       this._showContinueHint();
     } else {
+      if (this.music) {
+        this.music.stop(); // Stop music before changing scene
+      }
       this.scene.start("levelOneScene");
     }
   }
