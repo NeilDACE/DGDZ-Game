@@ -1,7 +1,7 @@
-class level3scene extends Phaser.Scene {
+class LevelThreeScene extends Phaser.Scene {
     // --- KONSTANTEN UND VARIABLEN ---
     constructor() {
-        super({ key: "level3scene" });
+        super({ key: "levelThreeScene" });
         
         // Konstanten für den animierten Hintergrund (1536x1024)
         this.FRAME_WIDTH = 1536;
@@ -23,16 +23,16 @@ class level3scene extends Phaser.Scene {
         // Die tatsächliche Berechnung der x/y-Werte erfolgt in create() oder placeIngredients()
         this.INGREDIENT_POSITIONS = [
             // Oben links
-            { x: 100, y: 150 },
-            { x: 250, y: 100 },
+            { x: 820, y: 560 },
+            { x: 85, y: 200 },
             // Mitte links
-            { x: 50, y: 350 },
-            { x: 200, y: 450 },
+            { x: 230, y: 330 },
+            { x: 300, y: 488 },
             // Unten links (unter dem Kessel)
-            { x: 150, y: 350 },
+            { x: 910, y: 232 },
             // Oben rechts
-            { x: 700, y: 120 },
-            { x: 550, y: 80 },
+            { x: 896, y: 562 },
+            { x: 5, y: 80 },
             // Mitte rechts
             { x: 400, y: 300 },
             { x: 350, y: 450 },

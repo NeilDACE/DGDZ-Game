@@ -1,10 +1,41 @@
-class StoryScene extends Phaser.Scene {
+/**
+ * Scene for displaying the narrative storyline with a typing effect.
+ * It introduces the game's theme of Order (Kosmos) versus Chaos (Umbra).
+ */
+class StoryTellingScene extends Phaser.Scene {
+  /**
+   * @type {Phaser.GameObjects.Text}
+   */
+  storyText;
+  /**
+   * @type {Phaser.Time.TimerEvent | null}
+   */
+  typeTimer = null;
+  /**
+   * @type {number}
+   */
+  currentCharIndex = 0;
+  /**
+   * @type {number}
+   */
+  typingSpeed = 30;
+  /**
+   * @type {boolean}
+   */
+  isDone = false;
+  /**
+   * @type {string}
+   */
+  fullText = "";
+
   constructor() {
-    super("StoryScene");
+    super("storyTellingScene");
   }
 
+  /**
+   * Sets up the scene, including background, story text, and typing effect.
+   */
   create() {
-    
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
 
@@ -12,7 +43,6 @@ class StoryScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor("#000000");
 
-    // Storytext (kannst du frei ändern, \n für neue Zeilen)
     this.fullText =
       "Die Geschichte der Zwei – Ursprung der Welt\n" +
       "Seit Anbeginn der Zeit existierten zwei Kräfte, älter als das Universum selbst:\n" +
@@ -30,41 +60,39 @@ class StoryScene extends Phaser.Scene {
       "Deine Aufgabe ist es, die chaotischen Elemente der Welt zu ordnen und das Gleichgewicht zwischen Kosmos und Umbra wiederherzustellen.\n" +
       "Die Zukunft der Welt liegt in deinen Händen.";
 
-    // LEERES Textfeld (Startpunkt)
     this.storyText = this.add
       .text(width / 2, 50, "", {
         fontSize: "22px",
         fontFamily: "Arial",
         color: "#ffffff",
         align: "center",
-        wordWrap: { width: width - 80 }, // AUTOMATISCHER UMBRUCH
+        wordWrap: { width: width - 80 },
       })
       .setOrigin(0.5, 0);
 
-    this.currentCharIndex = 0;
-    this.typingSpeed = 30;
-    this.isDone = false;
-
-    // Schreibmaschinen Timer
     this.typeTimer = this.time.addEvent({
       delay: this.typingSpeed,
-      callback: this.typeNextChar,
+      callback: this._typeNextChar,
       callbackScope: this,
       loop: true,
     });
 
-    // Scrollen mit Mausrad
     this.input.on("wheel", (pointer, gameObjects, dx, dy) => {
-      this.storyText.y -= dy * 0.4; // Scrollgeschwindigkeit
+      this.storyText.y -= dy * 0.4;
     });
 
-    // Skip oder weiter
-    this.input.on("pointerdown", () => this.handleSkipOrNext());
-    this.input.keyboard.on("keydown-SPACE", () => this.handleSkipOrNext());
+    this.input.on("pointerdown", () => this._handleSkipOrNext());
+    this.input.keyboard.on("keydown-SPACE", () => this._handleSkipOrNext());
   }
 
-  // Schreibmaschinen-Effekt
-  typeNextChar() {
+  // ----------------------------------------------------------------------------------
+  // PRIVATE HELPER METHODS
+  // ----------------------------------------------------------------------------------
+
+  /**
+   * Implements the typewriter effect by revealing one character at a time.
+   */
+  _typeNextChar() {
     if (this.currentCharIndex < this.fullText.length) {
       this.currentCharIndex++;
       this.storyText.setText(this.fullText.substring(0, this.currentCharIndex));
@@ -76,12 +104,15 @@ class StoryScene extends Phaser.Scene {
 
       if (!this.isDone) {
         this.isDone = true;
-        this.showContinueHint();
+        this._showContinueHint();
       }
     }
   }
 
-  showContinueHint() {
+  /**
+   * Displays the hint text to continue to the next scene.
+   */
+  _showContinueHint() {
     const { width } = this.scale;
 
     this.continueText = this.add
@@ -97,20 +128,20 @@ class StoryScene extends Phaser.Scene {
       .setOrigin(0.5);
   }
 
-  handleSkipOrNext() {
+  /**
+   * Handles user input (click/space) to skip the typing or proceed to the next level.
+   */
+  _handleSkipOrNext() {
     if (!this.isDone) {
-      // Schreibmaschine abbrechen → ganzen Text anzeigen
       if (this.typeTimer) {
         this.typeTimer.remove(false);
         this.typeTimer = null;
       }
       this.storyText.setText(this.fullText);
       this.isDone = true;
-      this.showContinueHint();
-      this.scene.start("level1scene");
+      this._showContinueHint();
     } else {
-      // Weiter zur LevelScene
-      this.scene.start("level1scene");
+      this.scene.start("levelOneScene");
     }
   }
 }

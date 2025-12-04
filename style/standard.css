@@ -1,16 +1,22 @@
 body {
   margin: 0;
-  background: #e4e0e0; /* Seite auch schwarz */
+  background: #000;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
+
+canvas {
+  display: block;
+  margin: 0 auto;
+}
+
 #layout-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px; /* Abstand zwischen Bildern und Canvas */
+  gap: 20px;
   padding-top: 20px;
 }
 
@@ -20,7 +26,7 @@ body {
 
 #side-left,
 #side-right {
-  width: 250px; /* Größe anpassen */
+  width: 250px;
   height: auto;
   object-fit: contain;
 }

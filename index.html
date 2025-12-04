@@ -5,69 +5,33 @@
     <title>Ordnung und Chaos</title>
 
     <link rel="stylesheet" href="style/standard.css" />
+    <link rel="stylesheet" href="style/level-style.css" />
 
-    <!-- Phaser -->
     <script src="node_modules/phaser/dist/phaser.min.js"></script>
 
-    <!-- Deine Szenen & Game-Setup -->
-    <script src="js/startscene.js"></script>
-    <script src="js/storyscene.js"></script>
-    <script src="js/level1scene.js"></script>
-    <script src="js/level2scene.js"></script>
-    <script src="js/level3scene.js"></script>
-    <script src="js/game.js"></script>
-
-    <style>
-      body {
-        margin: 0;
-        background: #000;
-      }
-      canvas {
-        display: block;
-        margin: 0 auto;
-      }
-      .hidden {
-        display: none;
-      }
-      .level1-background {
-        background-image: url("Assets/levelOne/levelOneBackgroundOutCanvas.png");
-        background-size: cover;
-        background-position: center;
-      }
-      .level1-game-container {
-        border: 2px solid rgb(242, 202, 0, 0.3);
-      }
-      .level2-background {
-        background-image: url("assets/leveltwo/backgroundEgyptOutCanvas.png");
-        background-size: cover;
-        background-position: center;
-      }
-      .level2-game-container {
-        border: 2px solid rgb(0, 162, 232, 0.3);
-      }
-
-      .level3-background {
-        background-image: url("Assets/levelThree/Background-level3scene.png");
-        background-size: cover;
-        background-position: center;
-      }
-
-      .level3-game-container {
-        border: 2px solid rgb(242, 202, 0, 0.3);
-      }
-    </style>
+    <script src="scripts/gameMenuScene.js"></script>
+    <script src="scripts/storyTellingScene.js"></script>
+    <script src="scripts/levelOneScene.js"></script>
+    <script src="scripts/levelTwoScene.js"></script>
+    <script src="scripts/levelThreeScene.js"></script>
+    <script src="scripts/main.js"></script>
   </head>
 
   <body id="bodyId">
     <div id="layout-wrapper">
-      <!-- LINKES BILD -->
-      <img class="hidden" src="assets/Gott-Umbra.png" id="side-left" />
+      <img
+        class="hidden"
+        src="assets\story-telling\god-umbra.png"
+        id="side-left"
+      />
 
-      <!-- PHASER CANVAS KOMMT HIER HINEIN -->
       <div id="game-container"></div>
 
-      <!-- RECHTES BILD -->
-      <img class="hidden" src="assets/Gott-Kosmos.png" id="side-right" />
+      <img
+        class="hidden"
+        src="assets\story-telling\god-kosmos.png"
+        id="side-right"
+      />
     </div>
   </body>
 </html>

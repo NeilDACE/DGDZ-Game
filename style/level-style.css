@@ -1,0 +1,33 @@
+.hidden {
+  display: none;
+}
+
+.level1-background {
+  background-image: url("/assets/level-one/background-canvas.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.level1-game-container {
+  border: 2px solid rgb(242, 202, 0, 0.3);
+}
+
+.level2-background {
+  background-image: url("/assets/leveltwo/backgroundEgyptOutCanvas.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.level2-game-container {
+  border: 2px solid rgb(0, 162, 232, 0.3);
+}
+
+.level3-background {
+  background-image: url("/assets/levelThree/Background-level3scene.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.level3-game-container {
+  border: 2px solid rgb(242, 202, 0, 0.3);
+}
