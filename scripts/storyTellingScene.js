@@ -18,7 +18,7 @@ class StoryTellingScene extends Phaser.Scene {
   /**
    * @type {number}
    */
-  typingSpeed = 30;
+  typingSpeed = 70;
   /**
    * @type {boolean}
    */
