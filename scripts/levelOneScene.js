@@ -285,9 +285,11 @@ class LevelOneScene extends Phaser.Scene {
             5000
         );
         
-        if (this.music) {
+        setTimeout(() => {
+            if (this.music) {
             this.music.stop();
         }
+        }, 6000);
         
         setTimeout(() => {
             this.scene.start("levelTwoScene");
