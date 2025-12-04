@@ -49,7 +49,7 @@ class LevelThreeScene extends Phaser.Scene {
 
     // --- PRELOAD: ASSETS LADEN ---
     preload() {
-        this.load.spritesheet('backgroundAnimation', 'assets/levelThree/background-canvas-spritesheet.png', {
+        this.load.spritesheet('backgroundAnimation', 'assets/level-three/background-canvas-spritesheet.png', {
             frameWidth: this.FRAME_WIDTH,
             frameHeight: this.FRAME_HEIGHT
         });
@@ -57,7 +57,7 @@ class LevelThreeScene extends Phaser.Scene {
         
         
         for (const key of this.correctSequence) {
-            this.load.image(key, `assets/levelThree/ingredients/${key}.png`);
+            this.load.image(key, `assets/level-three/ingredients/${key}.png`);
         }
     }
 
