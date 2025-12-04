@@ -256,5 +256,6 @@ class level1scene extends Phaser.Scene {
       "Das Chaos ist gebannt!\nDu hast die Planeten erfolgreich in\ndie richtige Umlaufbahn gebracht.",
       5000
     );
+    this.scene.start("level2scene");
   }
 }

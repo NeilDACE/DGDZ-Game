@@ -13,12 +13,33 @@ class level3scene extends Phaser.Scene {
         // SEQUENZ-DEFINITION
         // Wichtig: Die Namen müssen exakt mit den Bild-Keys übereinstimmen!
         this.correctSequence = [
-            "pilz", "auge", "wurzel", "knochen", "flasche", 
-            "kralle", "feder", "beere", "blatt", "kristall"
+            "Mushroom", "Eye", "Stick", "Bone", "Bottle", 
+            "Crawl", "Feather", "Berry", "Sheet", "Crystal"
         ];
         this.TOTAL_INGREDIENTS = this.correctSequence.length;
         this.currentSequenceIndex = 0; // Index der als Nächstes benötigten Zutat
         
+        // Feste Positionen für die 10 Zutaten (RELATIV zu einem 800x600 oder ähnlichem Screen)
+        // Die tatsächliche Berechnung der x/y-Werte erfolgt in create() oder placeIngredients()
+        this.INGREDIENT_POSITIONS = [
+            // Oben links
+            { x: 100, y: 150 },
+            { x: 250, y: 100 },
+            // Mitte links
+            { x: 50, y: 350 },
+            { x: 200, y: 450 },
+            // Unten links (unter dem Kessel)
+            { x: 150, y: 350 },
+            // Oben rechts
+            { x: 700, y: 120 },
+            { x: 550, y: 80 },
+            // Mitte rechts
+            { x: 400, y: 300 },
+            { x: 350, y: 450 },
+            // Unten rechts (unter dem Kessel)
+            { x: 500, y: 400 }
+        ];
+
         // Spielstatus & Objekte
         this.ingredientsCollected = 0;
         this.ingredientsGroup = null; // Wichtig: Wird in create() als Phaser.Group initialisiert!
@@ -33,27 +54,34 @@ class level3scene extends Phaser.Scene {
             frameHeight: this.FRAME_HEIGHT
         });
         
-        this.load.image("cauldron", "Assets/levelFour/kessel.png");
+        
         
         for (const key of this.correctSequence) {
-            this.load.image(key, `Assets/levelFour/ingredients/${key}.png`);
+            this.load.image(key, `Assets/levelThree/${key}.png`);
         }
     }
 
     // --- CREATE: SPIELOBJEKTE ERSTELLEN ---
     create() {
+        document.getElementById("bodyId").classList.toggle("level3-background");
+        document.getElementById("game-container").classList.toggle("level3-game-container");
+
         const { width, height } = this.sys.game.config;
         
-        this.CAULDRON_TARGET.x = width / 2;
-        this.CAULDRON_TARGET.y = height / 2;
+        // Annahme: Der Standard-Canvas ist 800x600. Wir berechnen den Skalierungsfaktor für die Positionen.
+        // Wenn Ihr Canvas eine feste Größe hat, kann die Skalierung vereinfacht oder weggelassen werden.
+        const defaultWidth = 1000; // Anzunehmende Basisbreite für die fixen Positionen
+        const defaultHeight = 600; // Anzunehmende Basishöhe für die fixen Positionen
+
+        this.positionScaleX = width / defaultWidth;
+        this.positionScaleY = height / defaultHeight;
+
+        this.CAULDRON_TARGET.x = width / 2 - 15;
+        this.CAULDRON_TARGET.y = height / 2 + 50;
 
         // 1. Animierten Hintergrund einrichten
         this.setupAnimatedBackground(width, height);
         
-        // 2. Kessel (Target) in der Mitte platzieren
-        this.cauldron = this.add.image(this.CAULDRON_TARGET.x, this.CAULDRON_TARGET.y, "cauldron")
-            .setScale(0.5) 
-            .setDepth(5); 
 
         // 3. Gruppe für alle Zutaten erstellen (Wichtig: Hier initialisieren!)
         this.ingredientsGroup = this.add.group();
@@ -89,8 +117,7 @@ class level3scene extends Phaser.Scene {
         this.currentSequenceIndex = 0;
         
         // 3. Platziere alle Zutaten neu (Alle Keys aus der Sequenz)
-        const { width, height } = this.sys.game.config;
-        this.placeIngredients(width, height, this.correctSequence);
+        this.placeIngredients(this.correctSequence);
         
         // 4. Setze Framerate auf den Anfangswert zurück (schnelles Kochen)
         this.updateBackgroundFramerate();
@@ -106,31 +133,25 @@ class level3scene extends Phaser.Scene {
     // ----------------------------------------------------------------------
 
     /**
-     * Platziere die in der Liste keysToPlace definierten Zutaten zufällig.
+     * Platziere die in der Liste keysToPlace definierten Zutaten an festen Positionen.
      * @param {string[]} keysToPlace - Array der Keys, die als Sprite platziert werden sollen.
      */
-    placeIngredients(width, height, keysToPlace) { 
-        const padding = 150; 
-        
+    placeIngredients(keysToPlace) { 
         // Um nur eindeutige Keys zu platzieren, falls doppelte in der Sequenz sind
         const uniqueKeysToPlace = [...new Set(keysToPlace)]; 
         
-        for (const key of uniqueKeysToPlace) { 
+        // Sicherstellen, dass die Anzahl der Zutaten und Positionen übereinstimmt (oder zumindest nicht überschritten wird)
+        const count = Math.min(uniqueKeysToPlace.length, this.INGREDIENT_POSITIONS.length);
+
+        for (let i = 0; i < count; i++) {
+            const key = uniqueKeysToPlace[i];
+            const pos = this.INGREDIENT_POSITIONS[i];
             
-            let startX, startY, distanceToCauldron;
-            
-            // Logik für zufällige Startposition (außerhalb des Kessels)
-            do {
-                startX = Phaser.Math.Between(padding, width - padding);
-                startY = Phaser.Math.Between(padding, height - padding);
-                
-                distanceToCauldron = Phaser.Math.Distance.Between(
-                    startX, startY, 
-                    this.CAULDRON_TARGET.x, this.CAULDRON_TARGET.y
-                );
-            } while (distanceToCauldron < this.CAULDRON_TARGET.radius * 1.5);
-            
-            // Füge die Zutat der Gruppe hinzu (damit sie bei Reset gelöscht werden kann)
+            // Die feste Position basierend auf dem Skalierungsfaktor berechnen
+            const startX = pos.x * this.positionScaleX;
+            const startY = pos.y * this.positionScaleY;
+
+            // Füge die Zutat der Gruppe hinzu
             const item = this.createDraggableIngredient(key, startX, startY);
             this.ingredientsGroup.add(item); 
         }
@@ -143,7 +164,7 @@ class level3scene extends Phaser.Scene {
         const item = this.add
             .image(startX, startY, key)
             .setInteractive({ draggable: true })
-            .setScale(0.3) 
+            .setScale(0.2) // Skalierung der Zutat
             .setDepth(1)
             .setName(key); // Der Name ist entscheidend für die Sequenzprüfung!
 
@@ -240,7 +261,7 @@ class level3scene extends Phaser.Scene {
     setupAnimatedBackground(width, height) {
         this.anims.create({
             key: 'backgroundAnimation', 
-            frames: this.anims.generateFrameNumbers('backgroundAnimation', { start: 0, end: 3 }), 
+            frames: this.anims.generateFrameNumbers('backgroundAnimation', { start: 0, end: 2 }), 
             frameRate: this.START_FRAMERATE, 
             repeat: -1, 
         });
@@ -248,7 +269,7 @@ class level3scene extends Phaser.Scene {
         this.background = this.add.sprite(width / 2, height / 2, 'backgroundAnimation');
         const scaleX = width / this.FRAME_WIDTH;
         const scaleY = height / this.FRAME_HEIGHT; 
-        const scale = Math.min(scaleX, scaleY); 
+        const scale = Math.max(scaleX, scaleY); 
 
         this.background.setScale(scale); 
         this.background.setDepth(-10); 

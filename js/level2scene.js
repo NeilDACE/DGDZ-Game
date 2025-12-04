@@ -1,6 +1,6 @@
-class EgyptLevelScene extends Phaser.Scene {
+class level2scene extends Phaser.Scene {
   constructor() {
-    super("EgyptLevelScene");
+    super("level2scene");
   }
 
   preload() {
@@ -235,5 +235,6 @@ class EgyptLevelScene extends Phaser.Scene {
         onComplete: () => piece.setDepth(5),
       });
     }
+    this.scene.start("level3scene");
   }
 }
