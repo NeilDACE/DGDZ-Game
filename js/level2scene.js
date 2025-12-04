@@ -4,13 +4,13 @@ class level2scene extends Phaser.Scene {
   }
 
   preload() {
-    // Background mit schwarzen Löchern
+    // Hintergrund mit Puzzle-Löchern
     this.load.image(
       "egypt_bg_puzzle",
       "assets/leveltwo/backgroundCanvasfinish.png"
     );
 
-    // WICHTIG: diese Keys müssen exakt zu deinen Dateien passen!
+    // Puzzle-Teile
     this.load.image("piece_nose", "assets/leveltwo/nase.png");
     this.load.image("piece_door", "assets/leveltwo/saeule.png");
     this.load.image("piece_crown", "assets/leveltwo/pflanze.png");
@@ -19,7 +19,8 @@ class level2scene extends Phaser.Scene {
     this.load.image("piece_symbol", "assets/leveltwo/symbol.png");
     this.load.image("piece_camel", "assets/leveltwo/camel.png");
     this.load.image("piece_mensch", "assets/leveltwo/mensch.png");
-    // optional: Sand-Overlay
+
+    // optional
     this.load.image("sand_overlay", "assets/sand_overlay.png");
   }
 
@@ -28,6 +29,7 @@ class level2scene extends Phaser.Scene {
     document
       .getElementById("game-container")
       .classList.toggle("level2-game-container");
+
     // === Hintergrund ===
     const bg = this.add.image(500, 300, "egypt_bg_puzzle").setDepth(0);
 
@@ -37,13 +39,13 @@ class level2scene extends Phaser.Scene {
     );
     bg.setScale(scale);
 
-    // === Sandsturm-Overlay (optional) ===
+    // === Sand Overlay ===
     this.sandOverlay = this.add
       .image(500, 300, "sand_overlay")
       .setDepth(20)
       .setAlpha(0);
 
-    // === Zielpositionen der Teile (x/y musst du ggf. anpassen) ===
+    // === Zielpositionen ===
     this.targets = [
       {
         id: "nose",
@@ -121,8 +123,6 @@ class level2scene extends Phaser.Scene {
 
     // === Puzzle-Teile ===
     this.pieces = [];
-
-    // z.B. alle auf 0.5 verkleinern
     this.createPiece("nose", "piece_nose", 150, 520, 0.5);
     this.createPiece("door", "piece_door", 400, 520, 0.5);
     this.createPiece("crown", "piece_crown", 750, 400, 0.5);
@@ -132,10 +132,7 @@ class level2scene extends Phaser.Scene {
     this.createPiece("camel", "piece_camel", 500, 100, 0.1);
     this.createPiece("mensch", "piece_mensch", 600, 100, 0.05);
 
-    // WICHTIG: KEIN this.input.setDraggable(this.pieces); hier!
-    // Das machen wir direkt in createPiece() für jedes Sprite.
-
-    // Drag-Events
+    // === Drag Events ===
     this.input.on("dragstart", (pointer, piece) => {
       if (piece.placed) return;
       piece.setDepth(10);
@@ -153,6 +150,7 @@ class level2scene extends Phaser.Scene {
       this.tryPlacePiece(piece);
     });
 
+    // Info Text
     this.infoText = this.add
       .text(500, 40, "Level 2: Setze die fehlenden Teile ein", {
         fontSize: "24px",
@@ -164,12 +162,11 @@ class level2scene extends Phaser.Scene {
     this.completed = false;
   }
 
-  // --------- EIN TEIL ERSTELLEN ---------
+  // === Puzzle-Teil erstellen ===
   createPiece(id, textureKey, startX, startY, scale = 1) {
     const sprite = this.add.sprite(startX, startY, textureKey).setDepth(5);
-
     if (!sprite) {
-      console.warn("Sprite konnte nicht erstellt werden für", textureKey);
+      console.warn("Sprite konnte nicht erstellt werden:", textureKey);
       return;
     }
 
@@ -179,7 +176,7 @@ class level2scene extends Phaser.Scene {
     sprite.placed = false;
 
     sprite.baseScale = scale;
-    sprite.setScale(scale); // <<< Größe setzen
+    sprite.setScale(scale);
 
     sprite.setInteractive({ cursor: "pointer" });
     this.input.setDraggable(sprite);
@@ -188,7 +185,7 @@ class level2scene extends Phaser.Scene {
     return sprite;
   }
 
-  // --------- PLATZIER-LOGIK ---------
+  // === Versuchen, ein Teil zu platzieren ===
   tryPlacePiece(piece) {
     const target = this.targets.find((t) => t.id === piece.pieceId);
     if (!target) return;
@@ -200,20 +197,18 @@ class level2scene extends Phaser.Scene {
       target.y
     );
 
-    const snapTolerance = target.radius; // oder * 1.2, wenn es leichter sein soll
-
-    if (dist <= snapTolerance) {
-      // Feinkorrektur beim Einrasten
+    if (dist <= target.radius) {
       const ox = target.offsetX || 0;
       const oy = target.offsetY || 0;
 
       piece.x = target.x + ox;
       piece.y = target.y + oy;
+
       piece.placed = true;
       piece.setDepth(2);
 
       const finalScale = target.targetScale || piece.baseScale;
-      piece.baseScale = finalScale; // für spätere Tweens
+      piece.baseScale = finalScale;
       piece.setScale(finalScale);
 
       this.tweens.add({
@@ -225,7 +220,6 @@ class level2scene extends Phaser.Scene {
 
       this.checkCompleted();
     } else {
-      // zurück
       this.tweens.add({
         targets: piece,
         x: piece.startX,
@@ -235,6 +229,24 @@ class level2scene extends Phaser.Scene {
         onComplete: () => piece.setDepth(5),
       });
     }
-    this.scene.start("level3scene");
+  }
+
+  // === Prüfen, ob alles fertig ist ===
+  checkCompleted() {
+    if (this.completed) return;
+
+    const allPlaced = this.pieces.every((p) => p.placed);
+
+    if (allPlaced) {
+      this.completed = true;
+
+      // optionaler Effekt
+      this.cameras.main.flash(300, 255, 255, 255);
+
+      // Level 3 starten
+      this.time.delayedCall(800, () => {
+        this.scene.start("level3scene");
+      });
+    }
   }
 }
