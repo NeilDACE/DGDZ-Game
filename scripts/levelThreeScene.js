@@ -13,8 +13,8 @@ class LevelThreeScene extends Phaser.Scene {
         // SEQUENZ-DEFINITION
         // Wichtig: Die Namen müssen exakt mit den Bild-Keys übereinstimmen!
         this.correctSequence = [
-            "Mushroom", "Eye", "Stick", "Bone", "Bottle", 
-            "Crawl", "Feather", "Berry", "Sheet", "Crystal"
+            "mushroom", "eye", "stick", "bone", "bottle", 
+            "crawl", "feather", "berry", "sheet", "crystal"
         ];
         this.TOTAL_INGREDIENTS = this.correctSequence.length;
         this.currentSequenceIndex = 0; // Index der als Nächstes benötigten Zutat
@@ -32,12 +32,12 @@ class LevelThreeScene extends Phaser.Scene {
             { x: 910, y: 232 },
             // Oben rechts
             { x: 896, y: 562 },
-            { x: 5, y: 80 },
+            { x: 180, y: 570 },
             // Mitte rechts
-            { x: 400, y: 300 },
-            { x: 350, y: 450 },
+            { x: 250, y: 208 },
+            { x: 350, y: 520 },
             // Unten rechts (unter dem Kessel)
-            { x: 500, y: 400 }
+            { x: 955, y: 420 }
         ];
 
         // Spielstatus & Objekte
@@ -49,7 +49,7 @@ class LevelThreeScene extends Phaser.Scene {
 
     // --- PRELOAD: ASSETS LADEN ---
     preload() {
-        this.load.spritesheet('backgroundAnimation', 'Assets/levelThree/background-level-3-spritesheet.png', {
+        this.load.spritesheet('backgroundAnimation', 'assets/levelThree/background-canvas-spritesheet.png', {
             frameWidth: this.FRAME_WIDTH,
             frameHeight: this.FRAME_HEIGHT
         });
@@ -57,7 +57,7 @@ class LevelThreeScene extends Phaser.Scene {
         
         
         for (const key of this.correctSequence) {
-            this.load.image(key, `Assets/levelThree/${key}.png`);
+            this.load.image(key, `assets/levelThree/ingredients/${key}.png`);
         }
     }
 

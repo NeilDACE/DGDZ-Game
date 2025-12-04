@@ -245,7 +245,7 @@ class LevelTwoScene extends Phaser.Scene {
 
       // Level 3 starten
       this.time.delayedCall(800, () => {
-        this.scene.start("level3scene");
+        this.scene.start("levelThreeScene");
       });
     }
   }
