@@ -31,3 +31,12 @@
 .level3-game-container {
   border: 2px solid rgb(242, 202, 0, 0.3);
 }
+.level5-background {
+  background-image: url("/assets/level-five/backgroundOutCanvas.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.level5-game-container {
+  border: 2px solid rgb(242, 202, 0, 0.3);
+}
