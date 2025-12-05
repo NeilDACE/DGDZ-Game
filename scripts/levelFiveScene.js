@@ -1,6 +1,6 @@
 class LevelFiveScene extends Phaser.Scene {
   constructor() {
-    super("levelFiveScene");
+    super("LevelFiveScene");
     this.levelCompleted = false;
   }
 
