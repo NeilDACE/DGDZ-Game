@@ -52,6 +52,9 @@ class LevelTwoScene extends Phaser.Scene {
       "bg_3_music",
       "assets/audio/level-two-background-sound.mp3"
     );
+
+    // 🔊 Sound wenn ein Puzzleteil richtig eingesetzt wird
+    this.load.audio("piece_place", "/assets/audio/puzzle-sound.mp3");
   }
 
   /**
@@ -170,7 +173,7 @@ class LevelTwoScene extends Phaser.Scene {
     this.input.on("dragstart", (pointer, piece) => {
       if (piece.placed) return;
       piece.setDepth(10);
-      piece.setScale(piece.baseScale * 1.0);
+      piece.setScale(piece.baseScale * 1.1);
     });
 
     this.input.on("drag", (pointer, piece, dragX, dragY) => {
@@ -272,7 +275,10 @@ class LevelTwoScene extends Phaser.Scene {
    */
   _tryPlacePiece(piece) {
     const target = this.targets.find((t) => t.id === piece.pieceId);
-    if (!target) return;
+    if (!target) {
+      console.warn("No target found for piece:", piece.pieceId);
+      return;
+    }
 
     const dist = Phaser.Math.Distance.Between(
       piece.x,
@@ -295,6 +301,9 @@ class LevelTwoScene extends Phaser.Scene {
       const finalScale = target.targetScale || piece.baseScale;
       piece.baseScale = finalScale;
       piece.setScale(finalScale);
+
+      // 🔊 Sound abspielen wenn korrekt gesetzt
+      this.sound.play("piece_place", { volume: 0.6 });
 
       // Zähler erhöhen & Anzeige aktualisieren
       this.placedCount++;

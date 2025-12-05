@@ -65,21 +65,20 @@ class StoryTellingScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#000000");
 
     this.fullText =
-      "Die Geschichte der Zwei – Ursprung der Welt\n" +
-      "Seit Anbeginn der Zeit existierten zwei Kräfte, älter als das Universum selbst:\n" +
-      "Kosmos, der Gott der Ordnung, und Umbra, der Gott des Chaos.\n" +
-      "Unsichtbar für die Menschheit wachten sie über die Welt, hielten Naturgesetze stabil, lenkten Zufall und Schicksal und sorgten dafür, dass Licht und Dunkelheit im Gleichgewicht blieben.\n" +
-      "Jahrtausende lang war ihre Harmonie unerschütterlich. \n" +
-      "Doch die Menschen veränderten alles.\n" +
-      "Mit dem Aufstieg der modernen Zivilisation begannen sie, das Gleichgewicht zu stören:\n" +
-      "Kriege, Umweltzerstörung, massenhafte Datenströme, unkontrollierte Technologien, manipulierte Informationen – all das verstärkte Umbra, den Gott des Chaos.\n" +
-      "Sein Einfluss breitete sich in Schatten aus, zwischen Radiowellen, im Lärm der Städte, in den Ängsten der Menschen.\n" +
-      "Je chaotischer die Welt wurde, desto schwächer wurde Kosmos.\n" +
-      "Die Welt selbst – die echte Welt – geriet aus dem Gleichgewicht.\n" +
-      "Eine Seele, die das Gleichgewicht wiederherstellen kann.\n\n" +
-      "Du bist diese Seele.\n\n" +
-      "Deine Aufgabe ist es, die chaotischen Elemente der Welt zu ordnen und das Gleichgewicht zwischen Kosmos und Umbra wiederherzustellen.\n" +
-      "Die Zukunft der Welt liegt in deinen Händen.";
+      "Zu Beginn aller Zeit existierten nur zwei Kräfte:\n" +
+      "Ordnung, das Licht, das verbindet – und Chaos, der Schatten, der trennt.\n" +
+      "Aus dem ewigen Tanz dieser Gegensätze entstand der Kosmos.\n" +
+      "Ordnung formte Sterne, Welten und Gesetzmäßigkeiten.\n" +
+      "Chaos zerschmetterte sie wieder, um Raum für Neues zu schaffen. \n" +
+      "So hielten beide Mächte das Gleichgewicht… bis eine Welt erschien, die alles veränderte:\n\n" +
+      "Die Erde.\n\n" +
+      "Ordnung sah in ihr das Potenzial für Harmonie, ein Ort, an dem Leben gedeihen und eine Balance zwischen Wandel und Stabilität entstehen konnte.\n\n" +
+      "Chaos hingegen sah eine Gelegenheit, sein Reich auszudehnen.\n" +
+      "Er schuf eine eigene Manifestation: Umbra, den Schatten, der sich in jede Epoche, jedes Volk und jede Maschine schleichen konnte.\n" +
+      "Umbra nährte sich von Fehlern, Konflikten und falschen Entscheidungen – und je weiter die Menschheit wuchs, desto stärker wurde Umbra.\n\n" +
+      "Um die Erde zu schützen, rief Ordnung einen Helfer jenseits von Zeit und Raum:\n\n" +
+      "den Auserwählten – dich.\n\n" +
+      "Nur du kannst durch die Zeitalter reisen, Herausforderungen meistern und die Balance immer wieder zurückholen, bevor Umbra sie endgültig zerstören kann.\n";
 
     this.storyText = this.add
       .text(width / 2, 50, "", {
