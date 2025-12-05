@@ -11,6 +11,7 @@ const TOTAL_ITEMS_REQUIRED = 20; // Es müssen 20 Items korrekt sortiert werden
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
 const SNAP_LINE_TOLERANCE = 50; // Max. Abstand zur Drop-Off X-Koordinate, um als 'auf der Linie' zu gelten
 const MAX_MISTAKES_ALLOWED = 3; // Maximal 3 Fehler erlaubt
+const ZONE_SIZE = 150; // Einheitliche Größe der Kisten
 
 // --- HAUPT-SCENE KLASSE ---
 
@@ -140,7 +141,6 @@ class LevelFourScene extends Phaser.Scene {
 
   setupDropZones() {
     const zoneColor = [0xff0000, 0x00ff00, 0x0000ff];
-    const zoneSize = 150;
 
     this.dropOffZones = [];
     this.dropInZones = [];
@@ -156,15 +156,15 @@ class LevelFourScene extends Phaser.Scene {
         fillStyle: { color: zoneColor[i], alpha: 0.2 },
       });
       graphics.fillRect(
-        coords.inX - zoneSize / 2,
+        coords.inX - ZONE_SIZE / 2,
         coords.inY,
-        zoneSize,
-        zoneSize / 2
+        ZONE_SIZE,
+        ZONE_SIZE / 2
       );
 
       const dropZone = this.add
-        .zone(coords.inX, coords.inY + zoneSize / 4, zoneSize, zoneSize / 2)
-        .setRectangleDropZone(zoneSize, zoneSize / 2);
+        .zone(coords.inX, coords.inY + ZONE_SIZE / 4, ZONE_SIZE, ZONE_SIZE / 2)
+        .setRectangleDropZone(ZONE_SIZE, ZONE_SIZE / 2);
 
       dropZone.setData("key", ITEM_KEYS[i]);
       this.dropInZones.push(dropZone);
@@ -206,11 +206,49 @@ class LevelFourScene extends Phaser.Scene {
       onComplete: (tween, targets) => {
         const obj = targets[0];
 
-        // Tween ist fertig – wenn das Item noch aktiv ist, ist es "verloren" -> Fehler
-        if (obj && obj.active) {
-          this.registerMistake();
+        // Wenn das Item schon zerstört wurde (z.B. durch Drop), nichts tun
+        if (!obj || !obj.active) return;
+
+        const itemKey = obj.getData("key");
+        let isCorrect = false;
+
+        // Prüfen, ob das Item in seiner richtigen Zielzone gelandet ist
+        for (let i = 0; i < ZONE_COORDINATES.length; i++) {
+          if (ITEM_KEYS[i] !== itemKey) continue;
+
+          const coords = ZONE_COORDINATES[i];
+          const zoneTop = coords.inY;
+          const zoneBottom = coords.inY + ZONE_SIZE / 2;
+          const zoneLeft = coords.inX - ZONE_SIZE / 2;
+          const zoneRight = coords.inX + ZONE_SIZE / 2;
+
+          if (
+            obj.x >= zoneLeft &&
+            obj.x <= zoneRight &&
+            obj.y >= zoneTop &&
+            obj.y <= zoneBottom
+          ) {
+            isCorrect = true;
+            break;
+          }
+        }
+
+        if (isCorrect) {
+          // ✅ automatisch richtig in die eigene Kiste gefallen
+          this.itemsDroppedCount++;
+          this.updateScoreText();
           obj.setData("fallTween", null);
           obj.destroy();
+
+          if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
+            alert("Spiel geschafft! Du hast 20 Items korrekt sortiert!");
+            this.setLeverState(false);
+          }
+        } else {
+          // ❌ ist unten angekommen, ohne richtig in der eigenen Kiste zu landen
+          obj.setData("fallTween", null);
+          obj.destroy();
+          this.registerMistake();
         }
       },
     });
@@ -240,7 +278,7 @@ class LevelFourScene extends Phaser.Scene {
     const dropZoneKey = dropZone.getData("key");
 
     if (itemKey === dropZoneKey) {
-      // ✅ Richtig sortiert
+      // ✅ Richtig sortiert per Drag & Drop
       this.itemsDroppedCount++;
       this.updateScoreText();
       gameObject.destroy();
