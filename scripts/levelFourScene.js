@@ -1,45 +1,39 @@
-// **ZENTRALE DEFINITION DER DROP ZONEN KOORDINATEN**
+// CENTRAL DEFINITION OF DROP ZONE COORDINATES
 const ZONE_COORDINATES = [
-  { offX: 215, inX: 215, offY: 240, inY: 445 }, // Zone 1: Holz
-  { offX: 475, inX: 475, offY: 240, inY: 445 }, // Zone 2: Schraube
-  { offX: 742, inX: 742, offY: 240, inY: 445 }, // Zone 3: Metall
+  { offX: 215, inX: 215, offY: 240, inY: 445 }, // Zone 1: Wood
+  { offX: 475, inX: 475, offY: 240, inY: 445 }, // Zone 2: Screw
+  { offX: 742, inX: 742, offY: 240, inY: 445 }, // Zone 3: Metal
 ];
 
-// Konstanten für die Spielmechanik
-const ITEM_MOVE_DURATION = 5000;
-const TOTAL_ITEMS_REQUIRED = 20; // Es müssen 20 Items korrekt sortiert werden
+// Game mechanics constants
+const ITEM_FALL_SPEED_MS = 1500; // NEU: Dauer des Falls in Millisekunden (je kleiner, desto schneller)
+const ITEM_MOVE_DURATION = ITEM_FALL_SPEED_MS; 
+const TOTAL_ITEMS_REQUIRED = 20;
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
-const SNAP_LINE_TOLERANCE = 50; // Max. Abstand zur Drop-Off X-Koordinate, um als 'auf der Linie' zu gelten
-const MAX_MISTAKES_ALLOWED = 3; // Maximal 3 Fehler erlaubt
-const ZONE_SIZE = 150; // Einheitliche Größe der Kisten
+const SNAP_LINE_TOLERANCE = 50;
+const ZONE_SIZE = 150;
 
-// --- HAUPT-SCENE KLASSE ---
-
+// MAIN SCENE CLASS
 class LevelFourScene extends Phaser.Scene {
-  // Globale Variablen (als Klasseneigenschaften deklariert)
   backgroundSprite;
   leverSprite;
   engineImage;
   isLeverOn = false;
 
-  // Spielmechanik-Variablen
   dropOffZones = [];
   dropInZones = [];
   itemGroup;
-  itemsDroppedCount = 0; // korrekt einsortierte Items
-  mistakesCount = 0; // Fehlerzähler
+  itemsDroppedCount = 0;
   itemSpawnTimer;
-
-  // Textobjekte für Anzeige
   scoreText;
-  mistakeText;
+  completionText;
 
   constructor() {
     super("LevelFourScene");
   }
 
   preload() {
-    // --- 1. Assets laden (Ihre Pfade) ---
+    // Load all game assets (paths are kept identical)
     this.load.spritesheet(
       "background_sheet",
       "assets/level-four/engine-on-off-work-spritesheet.png",
@@ -56,22 +50,58 @@ class LevelFourScene extends Phaser.Scene {
     );
 
     this.load.image("engine", "assets/level-four/engine.png");
-
-    // Item-Bilder (Ihre Pfade)
     this.load.image("item_red", "assets/level-four/items/holz.png");
     this.load.image("item_green", "assets/level-four/items/schraube.png");
     this.load.image("item_blue", "assets/level-four/items/metal.png");
   }
 
   create() {
-    // --- 1. Hintergrund-Sprite ---
+    this.setupHtmlClasses();
+    this.createBackground();
+    this.createAnimations();
+    this.createForegroundElements();
+
+    // Initialize game mechanics
+    this.itemGroup = this.add.group();
+    this.setupDropZones();
+    this.createScoreText();
+    this.setupDragEvents();
+    
+    // Initialize success text (invisible at start)
+    this.completionText = this.add.text(
+      this.game.config.width / 2,
+      this.game.config.height / 2,
+      "Ordnung hergestellt!",
+      { 
+        font: "50px Arial", 
+        fill: "#f5f103ff",
+        backgroundColor: "#00000080", 
+        padding: { x: 20, y: 10 }
+      }
+    )
+    .setOrigin(0.5)
+    .setDepth(100) 
+    .setVisible(false);
+  }
+  
+  // --- SCENE INITIALIZATION METHODS ---
+
+  setupHtmlClasses() {
+    document.getElementById("bodyId").classList.toggle("level4-background");
+    document
+      .getElementById("game-container")
+      .classList.toggle("level4-game-container");
+  }
+
+  createBackground() {
     this.backgroundSprite = this.add
       .sprite(0, 0, "background_sheet")
       .setOrigin(0, 0)
       .setDisplaySize(this.game.config.width, this.game.config.height);
     this.backgroundSprite.setFrame(0);
+  }
 
-    // --- 2. Animation erstellen ---
+  createAnimations() {
     this.anims.create({
       key: "bg_loop",
       frames: this.anims.generateFrameNumbers("background_sheet", {
@@ -81,8 +111,9 @@ class LevelFourScene extends Phaser.Scene {
       frameRate: 1,
       repeat: -1,
     });
+  }
 
-    // --- 3. Vordergrund-Elemente (Engine und Hebel) ---
+  createForegroundElements() {
     this.engineImage = this.add.image(908, 415, "engine").setScale(0.32);
 
     this.leverSprite = this.add
@@ -90,72 +121,75 @@ class LevelFourScene extends Phaser.Scene {
       .setInteractive()
       .setScale(0.1);
     this.leverSprite.on("pointerdown", this.handleLeverClick, this);
+  }
 
-    // --- 4. Spielmechanik initialisieren ---
-    this.itemGroup = this.add.group();
-    this.setupDropZones();
-
-    // Punktestand-Text
+  createScoreText() {
     this.scoreText = this.add.text(
+      410,
       10,
-      10,
-      `Sortierte Items: 0/${TOTAL_ITEMS_REQUIRED}`,
+      `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`,
       {
         font: "20px Arial",
         fill: "#ffffff",
       }
     );
+  }
 
-    // Fehler-Text
-    this.mistakeText = this.add.text(
-      10,
-      40,
-      `Fehler: 0/${MAX_MISTAKES_ALLOWED}`,
-      {
-        font: "20px Arial",
-        fill: "#ffaaaa",
-      }
-    );
-
-    // --- 5. Drag-and-Drop Events ---
-    this.input.on("dragstart", (pointer, gameObject) => {
-      // Stoppe das spezifische, in den Daten gespeicherte Tween
-      const activeTween = gameObject.getData("fallTween");
-      if (activeTween) {
-        activeTween.stop();
-      }
-
-      gameObject.setDepth(10);
-    });
-
-    this.input.on("drag", (pointer, gameObject, dragX, dragY) => {
-      gameObject.x = dragX;
-      gameObject.y = dragY;
-    });
-
+  setupDragEvents() {
+    this.input.on("dragstart", this.handleDragStart, this);
+    this.input.on("drag", this.handleDrag, this);
     this.input.on("drop", this.handleItemDrop, this);
     this.input.on("dragend", this.handleDragEnd, this);
   }
 
-  // --- METHODEN FÜR DIE SPIELMECHANIK ---
+  // --- DRAG EVENT HANDLERS ---
+
+  handleDragStart(pointer, gameObject) {
+    const activeTween = gameObject.getData("fallTween");
+    if (activeTween) {
+      activeTween.stop();
+    }
+    gameObject.setDepth(10);
+  }
+
+  handleDrag(pointer, gameObject, dragX, dragY) {
+    gameObject.x = dragX;
+    gameObject.y = dragY;
+  }
+  
+  handleItemDrop(pointer, gameObject, dropZone) {
+    if (!dropZone) return;
+
+    const itemKey = gameObject.getData("key");
+    const dropZoneKey = dropZone.getData("key");
+
+    if (itemKey === dropZoneKey) {
+      this.processCorrectDrop(gameObject);
+    } else {
+      gameObject.destroy();
+    }
+  }
+
+  handleDragEnd(pointer, gameObject, dropped) {
+    if (dropped) return;
+
+    if (this.trySnapToDropOffLine(gameObject)) {
+      this.resumeItemFall(gameObject, ZONE_COORDINATES[0].inY, false);
+    } else {
+      gameObject.destroy();
+    }
+  }
+
+  // --- ITEM SPAWN AND FALL MECHANICS ---
 
   setupDropZones() {
-    const zoneColor = [0xff0000, 0x00ff00, 0x0000ff];
-
     this.dropOffZones = [];
     this.dropInZones = [];
 
-    for (let i = 0; i < ZONE_COORDINATES.length; i++) {
-      const coords = ZONE_COORDINATES[i];
-
-      // Drop-Off (Startlinie oben)
+    ZONE_COORDINATES.forEach((coords, i) => {
       this.dropOffZones.push({ x: coords.offX, y: coords.offY });
 
-      // Sichtbare Drop-In-Zonen (unten)
-      const graphics = this.add.graphics({
-        fillStyle: { color: zoneColor[i], alpha: 0.2 },
-      });
-      graphics.fillRect(
+      this.add.graphics({}).fillRect(
         coords.inX - ZONE_SIZE / 2,
         coords.inY,
         ZONE_SIZE,
@@ -168,213 +202,113 @@ class LevelFourScene extends Phaser.Scene {
 
       dropZone.setData("key", ITEM_KEYS[i]);
       this.dropInZones.push(dropZone);
-    }
+    });
   }
 
   spawnRandomItem() {
-    const itemIndex = Phaser.Math.Between(0, 2);
-    const itemKey = ITEM_KEYS[itemIndex];
-
-    const zoneIndex = Phaser.Math.Between(0, 2);
-    const startX = this.dropOffZones[zoneIndex].x;
-    const startY = this.dropOffZones[zoneIndex].y;
+    const itemKey = Phaser.Utils.Array.GetRandom(ITEM_KEYS);
+    const startZone = Phaser.Utils.Array.GetRandom(this.dropOffZones);
+    const startX = startZone.x;
+    const startY = startZone.y;
 
     const item = this.add.image(startX, startY, itemKey).setScale(0.1);
-    item.setDepth(1);
-    item.setInteractive();
+    item.setDepth(1).setInteractive();
     this.input.setDraggable(item);
     item.setData("key", itemKey);
 
     this.itemGroup.add(item);
 
-    // Startet den Fall und speichert das Tween
-    this.resumeItemFall(item, ZONE_COORDINATES[0].inY, true); // initialer Fall ist ziehbar
+    this.resumeItemFall(item, ZONE_COORDINATES[0].inY, true);
   }
 
   resumeItemFall(item, targetY, isDraggable = false) {
-    // Deaktiviert das Ziehen nur, wenn es kein initialer Spawn ist
     if (!isDraggable) {
       this.input.setDraggable(item, false);
     }
 
-    // Item fällt weiter nach unten
-    const fallTween = this.tweens.add({
-      targets: item,
-      y: targetY,
-      duration: ITEM_MOVE_DURATION,
-      ease: "Linear",
-      onComplete: (tween, targets) => {
-        const obj = targets[0];
-
-        // Wenn das Item schon zerstört wurde (z.B. durch Drop), nichts tun
-        if (!obj || !obj.active) return;
-
-        const itemKey = obj.getData("key");
-        let isCorrect = false;
-
-        // Prüfen, ob das Item in seiner richtigen Zielzone gelandet ist
-        for (let i = 0; i < ZONE_COORDINATES.length; i++) {
-          if (ITEM_KEYS[i] !== itemKey) continue;
-
-          const coords = ZONE_COORDINATES[i];
-          const zoneTop = coords.inY;
-          const zoneBottom = coords.inY + ZONE_SIZE / 2;
-          const zoneLeft = coords.inX - ZONE_SIZE / 2;
-          const zoneRight = coords.inX + ZONE_SIZE / 2;
-
-          if (
-            obj.x >= zoneLeft &&
-            obj.x <= zoneRight &&
-            obj.y >= zoneTop &&
-            obj.y <= zoneBottom
-          ) {
-            isCorrect = true;
-            break;
-          }
-        }
-
-        if (isCorrect) {
-          // ✅ automatisch richtig in die eigene Kiste gefallen
-          this.itemsDroppedCount++;
-          this.updateScoreText();
-          obj.setData("fallTween", null);
-          obj.destroy();
-
-          if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
-            alert("Spiel geschafft! Du hast 20 Items korrekt sortiert!");
-            this.setLeverState(false);
-          }
-        } else {
-          // ❌ ist unten angekommen, ohne richtig in der eigenen Kiste zu landen
-          obj.setData("fallTween", null);
-          obj.destroy();
-          this.registerMistake();
-        }
-      },
-    });
-
-    // Speichert das Tween im Item für den Zugriff durch dragstart
+    const fallTween = this.createFallTween(item, targetY);
     item.setData("fallTween", fallTween);
   }
 
-  // Zentrale Fehlerbehandlung: erhöht Fehlerzähler, checkt auf Neustart
-  registerMistake() {
-    this.mistakesCount++;
-    this.updateMistakeText();
+  createFallTween(item, targetY) {
+    // Verwendet die neue Konstante ITEM_MOVE_DURATION (angepasste Geschwindigkeit)
+    return this.tweens.add({
+      targets: item,
+      y: targetY,
+      duration: ITEM_MOVE_DURATION, 
+      ease: "Linear",
+      onComplete: (tween, targets) => {
+        const obj = targets[0];
+        if (!obj || !obj.active) return;
+        
+        this.checkItemLanding(obj);
+      },
+    });
+  }
 
-    if (this.mistakesCount >= MAX_MISTAKES_ALLOWED) {
-      alert(
-        "Du hast 3 Fehler gemacht. Der Zähler wird zurückgesetzt und das Level startet neu."
+  checkItemLanding(item) {
+    const itemKey = item.getData("key");
+    const isCorrect = ZONE_COORDINATES.some((coords, i) => {
+      if (ITEM_KEYS[i] !== itemKey) return false;
+
+      const zoneTop = coords.inY;
+      const zoneBottom = coords.inY + ZONE_SIZE / 2;
+      const zoneLeft = coords.inX - ZONE_SIZE / 2;
+      const zoneRight = coords.inX + ZONE_SIZE / 2;
+
+      return (
+        item.x >= zoneLeft &&
+        item.x <= zoneRight &&
+        item.y >= zoneTop &&
+        item.y <= zoneBottom
       );
-      this.setLeverState(false); // Hebel & Level komplett zurücksetzen
-    }
+    });
+
+    item.setData("fallTween", null);
+    item.destroy();
+
+    if (isCorrect) {
+      this.processCorrectDrop();
+    } 
   }
 
-  handleItemDrop(pointer, gameObject, dropZone) {
-    // Wenn das Item nicht auf einer Drop Zone gelandet ist, abbrechen
-    if (!dropZone) return;
-
-    const itemKey = gameObject.getData("key");
-    const dropZoneKey = dropZone.getData("key");
-
-    if (itemKey === dropZoneKey) {
-      // ✅ Richtig sortiert per Drag & Drop
-      this.itemsDroppedCount++;
-      this.updateScoreText();
-      gameObject.destroy();
-
-      if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
-        alert("Spiel geschafft! Du hast 20 Items korrekt sortiert!");
-        this.setLeverState(false); // Level sauber stoppen
-      }
-    } else {
-      // ❌ Falsch in eine Kiste gelegt -> Fehler
-      gameObject.destroy();
-      this.registerMistake();
-    }
-  }
-
-  handleDragEnd(pointer, gameObject, dropped) {
-    // Wird aufgerufen, wenn das Item NICHT auf eine Drop-Zone gefallen ist
-    if (dropped) return;
-
-    // Prüfen, ob das Item nah genug an einer der drei Drop-Off-Linien liegt (Snap-Bereich)
+  trySnapToDropOffLine(gameObject) {
     let snapped = false;
 
     for (const dropOff of this.dropOffZones) {
       if (Math.abs(gameObject.x - dropOff.x) < SNAP_LINE_TOLERANCE) {
-        // Snap zur X-Koordinate der Drop-Off-Zone
         gameObject.x = dropOff.x;
-
-        // Setze die Y-Koordinate auf die Start-Y zurück bzw. darunter
         gameObject.y = Math.max(gameObject.y, dropOff.y);
-
-        // Starte den Fall neu (Item wird hier auf nicht-ziehbar gesetzt)
-        this.resumeItemFall(gameObject, ZONE_COORDINATES[0].inY, false);
-
         snapped = true;
         break;
       }
     }
+    return snapped;
+  }
 
-    if (!snapped) {
-      // ❌ Spieler hat das Item irgendwo losgelassen -> Item verloren -> Fehler
-      gameObject.destroy();
-      this.registerMistake();
+  processCorrectDrop(gameObject = null) {
+    this.itemsDroppedCount++;
+    this.updateScoreText();
+    if (gameObject) gameObject.destroy();
+
+    if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
+      this.setLeverState(false);
+      
+      this.completionText.setVisible(true);
+      
+      this.triggerSceneChange();
     }
   }
 
   updateScoreText() {
     if (this.scoreText) {
       this.scoreText.setText(
-        `Sortierte Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
+        `Sorted Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
       );
     }
   }
 
-  updateMistakeText() {
-    if (this.mistakeText) {
-      this.mistakeText.setText(
-        `Fehler: ${this.mistakesCount}/${MAX_MISTAKES_ALLOWED}`
-      );
-    }
-  }
-
-  stopLevel() {
-    if (this.itemSpawnTimer) {
-      this.itemSpawnTimer.remove(false);
-      this.itemSpawnTimer = null;
-    }
-
-    // Stoppt alle Tweens der Items
-    this.itemGroup.getChildren().forEach((item) => {
-      this.tweens.killTweensOf(item);
-    });
-
-    this.itemGroup.clear(true, true);
-
-    // Zähler zurücksetzen
-    this.itemsDroppedCount = 0;
-    this.mistakesCount = 0;
-    this.updateScoreText();
-    this.updateMistakeText();
-
-    this.backgroundSprite.stop();
-    this.backgroundSprite.setFrame(0);
-  }
-
-  startLevel() {
-    this.backgroundSprite.play("bg_loop");
-
-    this.itemSpawnTimer = this.time.addEvent({
-      delay: 1500,
-      callback: this.spawnRandomItem,
-      callbackScope: this,
-      loop: true,
-    });
-  }
-
-  // --- HEBEL STEUERUNG ---
+  // --- LEVEL STATE CONTROL ---
 
   handleLeverClick() {
     this.setLeverState(!this.isLeverOn);
@@ -392,7 +326,47 @@ class LevelFourScene extends Phaser.Scene {
     }
   }
 
-  update(time, delta) {
-    // ...
+  startLevel() {
+    this.backgroundSprite.play("bg_loop");
+
+    this.itemSpawnTimer = this.time.addEvent({
+      delay: 1500,
+      callback: this.spawnRandomItem,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
+  stopLevel() {
+    if (this.itemSpawnTimer) {
+      this.itemSpawnTimer.remove(false);
+      this.itemSpawnTimer = null;
+    }
+
+    this.itemGroup.getChildren().forEach((item) => {
+      this.tweens.killTweensOf(item);
+    });
+
+    this.itemGroup.clear(true, true);
+
+    this.itemsDroppedCount = 0;
+    this.updateScoreText();
+
+    this.backgroundSprite.stop();
+    this.backgroundSprite.setFrame(0);
+    
+    if (this.completionText) {
+        this.completionText.setVisible(false);
+    }
+  }
+  
+  // --- SCENE CHANGE ---
+  
+  triggerSceneChange() {
+    // Delay scene change by 3 seconds
+    this.time.delayedCall(3000, () => {
+        // Change to the next scene (e.g., 'NextScene')
+        this.scene.start('NextScene');
+    }, [], this);
   }
 }
