@@ -9,6 +9,7 @@ const ZONE_COORDINATES = [
 const ITEM_MOVE_DURATION = 5000;
 const TOTAL_ITEMS_REQUIRED = 15;
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
+const SNAP_LINE_TOLERANCE = 50; // Max. Abstand zur Drop-Off X-Koordinate, um als 'auf der Linie' zu gelten
 
 // --- HAUPT-SCENE KLASSE ---
 
@@ -50,9 +51,9 @@ class LevelFourScene extends Phaser.Scene {
     this.load.image("engine", "assets/level-four/engine.png");
 
     // Item-Bilder (Ihre Pfade)
-    this.load.image("item_red", "assets/level-four/items/holz.png"); // Index 0
-    this.load.image("item_green", "assets/level-four/items/schraube.png"); // Index 1
-    this.load.image("item_blue", "assets/level-four/items/metal.png"); // Index 2
+    this.load.image("item_red", "assets/level-four/items/holz.png");
+    this.load.image("item_green", "assets/level-four/items/schraube.png");
+    this.load.image("item_blue", "assets/level-four/items/metal.png");
   }
 
   create() {
@@ -88,13 +89,19 @@ class LevelFourScene extends Phaser.Scene {
     this.setupDropZones();
 
     // Punktestand-Text
-    this.add.text(10, 10, `Sortiere Items: 0/${TOTAL_ITEMS_REQUIRED}`, {
+    this.add.text(10, 10, `Sortierte Items: 0/${TOTAL_ITEMS_REQUIRED}`, {
       font: "20px Arial",
       fill: "#ffffff",
     });
 
     // --- 5. Drag-and-Drop Events ---
     this.input.on("dragstart", (pointer, gameObject) => {
+      // ⭐ NEU: Stoppe das spezifische, in den Daten gespeicherte Tween
+      const activeTween = gameObject.getData("fallTween");
+      if (activeTween) {
+        activeTween.stop();
+      }
+
       gameObject.setDepth(10);
     });
 
@@ -104,6 +111,7 @@ class LevelFourScene extends Phaser.Scene {
     });
 
     this.input.on("drop", this.handleItemDrop, this);
+    this.input.on("dragend", this.handleDragEnd, this);
   }
 
   // --- METHODEN FÜR DIE SPIELMECHANIK ---
@@ -118,12 +126,8 @@ class LevelFourScene extends Phaser.Scene {
     for (let i = 0; i < ZONE_COORDINATES.length; i++) {
       const coords = ZONE_COORDINATES[i];
 
-      // Drop-Off: Startposition
       this.dropOffZones.push({ x: coords.offX, y: coords.offY });
 
-      // Drop-In: Zielzone erstellen
-
-      // Visuelle Darstellung der Zielzonen
       const graphics = this.add.graphics({
         fillStyle: { color: zoneColor[i], alpha: 0.2 },
       });
@@ -134,7 +138,6 @@ class LevelFourScene extends Phaser.Scene {
         zoneSize / 2
       );
 
-      // Unsichtbares DropZone-Objekt
       const dropZone = this.add
         .zone(coords.inX, coords.inY + zoneSize / 4, zoneSize, zoneSize / 2)
         .setRectangleDropZone(zoneSize, zoneSize / 2);
@@ -145,11 +148,9 @@ class LevelFourScene extends Phaser.Scene {
   }
 
   spawnRandomItem() {
-    // Wählt ein zufälliges Item (Key und Index)
     const itemIndex = Phaser.Math.Between(0, 2);
     const itemKey = ITEM_KEYS[itemIndex];
 
-    // Wählt eine zufällige Start-Zone (X-Koordinate)
     const zoneIndex = Phaser.Math.Between(0, 2);
     const startX = this.dropOffZones[zoneIndex].x;
     const startY = this.dropOffZones[zoneIndex].y;
@@ -162,62 +163,91 @@ class LevelFourScene extends Phaser.Scene {
 
     this.itemGroup.add(item);
 
-    // Bewegung zur festen IN-Y-Koordinate
-    this.tweens.add({
+    // Startet den Fall und speichert das Tween
+    this.resumeItemFall(item, ZONE_COORDINATES[0].inY, true); // initialer Fall ist ziehbar
+  }
+
+  resumeItemFall(item, targetY, isDraggable = false) {
+    // ⭐ NEU: Deaktiviert das Ziehen nur, wenn es kein initialer Spawn ist
+    if (!isDraggable) {
+      this.input.setDraggable(item, false);
+    }
+
+    // Item fällt weiter nach unten
+    const fallTween = this.tweens.add({
       targets: item,
-      y: ZONE_COORDINATES[0].inY,
+      y: targetY,
       duration: ITEM_MOVE_DURATION,
       ease: "Linear",
       onComplete: (tween, targets) => {
+        // Stellt sicher, dass das Tween aus den Item-Daten entfernt wird, wenn es fertig ist
+        targets[0].setData("fallTween", null);
         if (targets[0].active) {
           targets[0].destroy();
         }
       },
     });
+
+    // ⭐ Speichert das Tween im Item für den Zugriff durch dragstart
+    item.setData("fallTween", fallTween);
   }
 
   handleItemDrop(pointer, gameObject, dropZone) {
-    // --- NEUE LOGIK FÜR FEHLERANALYSE UND ZÄHLER-RESET ---
-
-    if (!dropZone) {
-      console.warn(
-        "DROP FEHLER: Item wurde nicht auf eine Drop-Zone fallen gelassen."
-      );
-      gameObject.destroy();
-      return;
-    }
+    // Wenn das Item auf eine Drop Zone (Zielzone) gefallen ist
+    if (!dropZone) return;
 
     const itemKey = gameObject.getData("key");
     const dropZoneKey = dropZone.getData("key");
 
-    console.log(`--- Drop Versuch ---`);
-    console.log(`Item Key: ${itemKey}`);
-    console.log(`Zone Key: ${dropZoneKey}`);
-
     if (itemKey === dropZoneKey) {
-      console.log("ERFOLG: Keys stimmen überein. Zähler wird erhöht.");
-
-      // ✅ RICHTIG: Zähler hoch, Spiel geht weiter
+      // ✅ RICHTIG: Zähler hoch, Item zerstören
       this.itemsDroppedCount++;
       this.updateScoreText();
       gameObject.destroy();
 
       if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
-        alert("Game Over! Alle Items korrekt sortiert!");
+        alert("Spiel geschafft! Alle 15 Items korrekt sortiert!");
         this.setLeverState(false);
       }
     } else {
-      // ❌ FALSCH: Zähler zurücksetzen und Level stoppen
-      console.log(
-        "FEHLER: Keys stimmen NICHT überein. Zähler wird auf 0 zurückgesetzt und Level gestoppt."
-      );
-
-      this.itemsDroppedCount = 0; // Zähler zurücksetzen
+      // ❌ FALSCH: Zähler zurücksetzen und Level stoppen/neustarten
+      this.itemsDroppedCount = 0;
       this.updateScoreText();
       gameObject.destroy();
 
-      alert("Falsche Sortierung! Level wird neugestartet.");
+      alert(
+        "Falsche Sortierung! Der Zähler wurde zurückgesetzt. Level wird neugestartet."
+      );
       this.stopLevel();
+    }
+  }
+
+  handleDragEnd(pointer, gameObject, dropped) {
+    // Wird aufgerufen, wenn das Item NICHT auf eine Drop-Zone gefallen ist
+    if (dropped) return;
+
+    // Prüfen, ob das Item nah genug an einer der drei Drop-Off-Linien liegt (Snap-Bereich)
+    let snapped = false;
+
+    for (const dropOff of this.dropOffZones) {
+      if (Math.abs(gameObject.x - dropOff.x) < SNAP_LINE_TOLERANCE) {
+        // Snap zur X-Koordinate der Drop-Off-Zone
+        gameObject.x = dropOff.x;
+
+        // Setze die Y-Koordinate auf die Start-Y zurück
+        gameObject.y = Math.max(gameObject.y, dropOff.y);
+
+        // Starte den Fall neu (Item wird hier auf nicht-ziehbar gesetzt)
+        this.resumeItemFall(gameObject, ZONE_COORDINATES[0].inY, false);
+
+        snapped = true;
+        break;
+      }
+    }
+
+    if (!snapped) {
+      // Wenn es weder auf eine Drop-Zone noch auf eine Startlinie gesnappt wurde, wird es zerstört.
+      gameObject.destroy();
     }
   }
 
@@ -227,7 +257,7 @@ class LevelFourScene extends Phaser.Scene {
     );
     if (textObject) {
       textObject.setText(
-        `Sortiere Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
+        `Sortierte Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
       );
     }
   }
@@ -237,7 +267,13 @@ class LevelFourScene extends Phaser.Scene {
       this.itemSpawnTimer.remove(false);
       this.itemSpawnTimer = null;
     }
-    this.itemGroup.clear(true, true); // Items verschwinden
+
+    // Stoppt alle Tweens der Items
+    this.itemGroup.getChildren().forEach((item) => {
+      this.tweens.killTweensOf(item);
+    });
+
+    this.itemGroup.clear(true, true);
     this.itemsDroppedCount = 0;
     this.updateScoreText();
     this.backgroundSprite.stop();
@@ -248,7 +284,7 @@ class LevelFourScene extends Phaser.Scene {
     this.backgroundSprite.play("bg_loop");
 
     this.itemSpawnTimer = this.time.addEvent({
-      delay: 1500, // Alle 1.5 Sekunden
+      delay: 1500,
       callback: this.spawnRandomItem,
       callbackScope: this,
       loop: true,
