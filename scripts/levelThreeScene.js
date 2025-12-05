@@ -19,14 +19,14 @@ class LevelThreeScene extends Phaser.Scene {
   /** @type {string[]} */
   correctSequence = [
     "mushroom",
-    "eye",
+    "sheet",
     "stick",
+    "eye",
     "bone",
     "bottle",
     "crawl",
     "feather",
     "berry",
-    "sheet",
     "crystal",
   ];
   /** @type {number} */
