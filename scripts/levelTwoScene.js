@@ -33,18 +33,18 @@ class LevelTwoScene extends Phaser.Scene {
     // Background with puzzle slots
     this.load.image(
       "egypt_bg_puzzle",
-      "assets/leveltwo/backgroundCanvasfinish.png"
+      "assets/level-two/backgroundCanvasfinish.png"
     );
 
     // Puzzle pieces
-    this.load.image("piece_nose", "assets/leveltwo/nase.png");
-    this.load.image("piece_door", "assets/leveltwo/saeule.png");
-    this.load.image("piece_crown", "assets/leveltwo/pflanze.png");
-    this.load.image("piece_stone", "assets/leveltwo/stone.png");
-    this.load.image("piece_obelisk", "assets/leveltwo/obeliskSpitze.png");
-    this.load.image("piece_symbol", "assets/leveltwo/symbol.png");
-    this.load.image("piece_camel", "assets/leveltwo/camel.png");
-    this.load.image("piece_human", "assets/leveltwo/mensch.png");
+    this.load.image("piece_nose", "assets/level-two/nase.png");
+    this.load.image("piece_door", "assets/level-two/saeule.png");
+    this.load.image("piece_crown", "assets/level-two/pflanze.png");
+    this.load.image("piece_stone", "assets/level-two/stone.png");
+    this.load.image("piece_obelisk", "assets/level-two/obeliskSpitze.png");
+    this.load.image("piece_symbol", "assets/level-two/symbol.png");
+    this.load.image("piece_camel", "assets/level-two/camel.png");
+    this.load.image("piece_human", "assets/level-two/mensch.png");
 
     // Optional overlays/audio
     this.load.image("sand_overlay", "assets/sand_overlay.png");
