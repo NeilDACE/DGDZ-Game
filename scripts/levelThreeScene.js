@@ -334,7 +334,7 @@ class LevelThreeScene extends Phaser.Scene {
 
     // Transition to the final scene (assuming it's 'finalScene') after a delay
     this.time.delayedCall(3000, () => {
-      this.scene.start("finalScene"); // Passe dies bei Bedarf an den Key deiner End-Szene an
+      this.scene.start("LevelFourScene"); // Passe dies bei Bedarf an den Key deiner End-Szene an
     });
   }
 }

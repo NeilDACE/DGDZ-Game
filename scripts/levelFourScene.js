@@ -366,7 +366,7 @@ class LevelFourScene extends Phaser.Scene {
     // Delay scene change by 3 seconds
     this.time.delayedCall(3000, () => {
         // Change to the next scene (e.g., 'NextScene')
-        this.scene.start('NextScene');
+        this.scene.start('LevelFiveScene');
     }, [], this);
   }
 }

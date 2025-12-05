@@ -160,7 +160,7 @@ class LevelFiveScene extends Phaser.Scene {
           this._setupHTMLClasses(false);
 
           // Nächste Szene starten (Namen anpassen, falls anders)
-          this.scene.start("levelSixScene");
+          this.scene.start("GameEndScene");
         });
       });
     }
