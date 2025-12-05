@@ -7,9 +7,10 @@ const ZONE_COORDINATES = [
 
 // Konstanten für die Spielmechanik
 const ITEM_MOVE_DURATION = 5000;
-const TOTAL_ITEMS_REQUIRED = 15;
+const TOTAL_ITEMS_REQUIRED = 20; // Es müssen 20 Items korrekt sortiert werden
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
 const SNAP_LINE_TOLERANCE = 50; // Max. Abstand zur Drop-Off X-Koordinate, um als 'auf der Linie' zu gelten
+const MAX_MISTAKES_ALLOWED = 3; // Maximal 3 Fehler erlaubt
 
 // --- HAUPT-SCENE KLASSE ---
 
@@ -24,8 +25,13 @@ class LevelFourScene extends Phaser.Scene {
   dropOffZones = [];
   dropInZones = [];
   itemGroup;
-  itemsDroppedCount = 0;
+  itemsDroppedCount = 0; // korrekt einsortierte Items
+  mistakesCount = 0; // Fehlerzähler
   itemSpawnTimer;
+
+  // Textobjekte für Anzeige
+  scoreText;
+  mistakeText;
 
   constructor() {
     super("LevelFourScene");
@@ -89,14 +95,30 @@ class LevelFourScene extends Phaser.Scene {
     this.setupDropZones();
 
     // Punktestand-Text
-    this.add.text(10, 10, `Sortierte Items: 0/${TOTAL_ITEMS_REQUIRED}`, {
-      font: "20px Arial",
-      fill: "#ffffff",
-    });
+    this.scoreText = this.add.text(
+      10,
+      10,
+      `Sortierte Items: 0/${TOTAL_ITEMS_REQUIRED}`,
+      {
+        font: "20px Arial",
+        fill: "#ffffff",
+      }
+    );
+
+    // Fehler-Text
+    this.mistakeText = this.add.text(
+      10,
+      40,
+      `Fehler: 0/${MAX_MISTAKES_ALLOWED}`,
+      {
+        font: "20px Arial",
+        fill: "#ffaaaa",
+      }
+    );
 
     // --- 5. Drag-and-Drop Events ---
     this.input.on("dragstart", (pointer, gameObject) => {
-      // ⭐ NEU: Stoppe das spezifische, in den Daten gespeicherte Tween
+      // Stoppe das spezifische, in den Daten gespeicherte Tween
       const activeTween = gameObject.getData("fallTween");
       if (activeTween) {
         activeTween.stop();
@@ -126,8 +148,10 @@ class LevelFourScene extends Phaser.Scene {
     for (let i = 0; i < ZONE_COORDINATES.length; i++) {
       const coords = ZONE_COORDINATES[i];
 
+      // Drop-Off (Startlinie oben)
       this.dropOffZones.push({ x: coords.offX, y: coords.offY });
 
+      // Sichtbare Drop-In-Zonen (unten)
       const graphics = this.add.graphics({
         fillStyle: { color: zoneColor[i], alpha: 0.2 },
       });
@@ -168,7 +192,7 @@ class LevelFourScene extends Phaser.Scene {
   }
 
   resumeItemFall(item, targetY, isDraggable = false) {
-    // ⭐ NEU: Deaktiviert das Ziehen nur, wenn es kein initialer Spawn ist
+    // Deaktiviert das Ziehen nur, wenn es kein initialer Spawn ist
     if (!isDraggable) {
       this.input.setDraggable(item, false);
     }
@@ -180,45 +204,55 @@ class LevelFourScene extends Phaser.Scene {
       duration: ITEM_MOVE_DURATION,
       ease: "Linear",
       onComplete: (tween, targets) => {
-        // Stellt sicher, dass das Tween aus den Item-Daten entfernt wird, wenn es fertig ist
-        targets[0].setData("fallTween", null);
-        if (targets[0].active) {
-          targets[0].destroy();
+        const obj = targets[0];
+
+        // Tween ist fertig – wenn das Item noch aktiv ist, ist es "verloren" -> Fehler
+        if (obj && obj.active) {
+          this.registerMistake();
+          obj.setData("fallTween", null);
+          obj.destroy();
         }
       },
     });
 
-    // ⭐ Speichert das Tween im Item für den Zugriff durch dragstart
+    // Speichert das Tween im Item für den Zugriff durch dragstart
     item.setData("fallTween", fallTween);
   }
 
+  // Zentrale Fehlerbehandlung: erhöht Fehlerzähler, checkt auf Neustart
+  registerMistake() {
+    this.mistakesCount++;
+    this.updateMistakeText();
+
+    if (this.mistakesCount >= MAX_MISTAKES_ALLOWED) {
+      alert(
+        "Du hast 3 Fehler gemacht. Der Zähler wird zurückgesetzt und das Level startet neu."
+      );
+      this.setLeverState(false); // Hebel & Level komplett zurücksetzen
+    }
+  }
+
   handleItemDrop(pointer, gameObject, dropZone) {
-    // Wenn das Item auf eine Drop Zone (Zielzone) gefallen ist
+    // Wenn das Item nicht auf einer Drop Zone gelandet ist, abbrechen
     if (!dropZone) return;
 
     const itemKey = gameObject.getData("key");
     const dropZoneKey = dropZone.getData("key");
 
     if (itemKey === dropZoneKey) {
-      // ✅ RICHTIG: Zähler hoch, Item zerstören
+      // ✅ Richtig sortiert
       this.itemsDroppedCount++;
       this.updateScoreText();
       gameObject.destroy();
 
       if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
-        alert("Spiel geschafft! Alle 15 Items korrekt sortiert!");
-        this.setLeverState(false);
+        alert("Spiel geschafft! Du hast 20 Items korrekt sortiert!");
+        this.setLeverState(false); // Level sauber stoppen
       }
     } else {
-      // ❌ FALSCH: Zähler zurücksetzen und Level stoppen/neustarten
-      this.itemsDroppedCount = 0;
-      this.updateScoreText();
+      // ❌ Falsch in eine Kiste gelegt -> Fehler
       gameObject.destroy();
-
-      alert(
-        "Falsche Sortierung! Der Zähler wurde zurückgesetzt. Level wird neugestartet."
-      );
-      this.stopLevel();
+      this.registerMistake();
     }
   }
 
@@ -234,7 +268,7 @@ class LevelFourScene extends Phaser.Scene {
         // Snap zur X-Koordinate der Drop-Off-Zone
         gameObject.x = dropOff.x;
 
-        // Setze die Y-Koordinate auf die Start-Y zurück
+        // Setze die Y-Koordinate auf die Start-Y zurück bzw. darunter
         gameObject.y = Math.max(gameObject.y, dropOff.y);
 
         // Starte den Fall neu (Item wird hier auf nicht-ziehbar gesetzt)
@@ -246,18 +280,24 @@ class LevelFourScene extends Phaser.Scene {
     }
 
     if (!snapped) {
-      // Wenn es weder auf eine Drop-Zone noch auf eine Startlinie gesnappt wurde, wird es zerstört.
+      // ❌ Spieler hat das Item irgendwo losgelassen -> Item verloren -> Fehler
       gameObject.destroy();
+      this.registerMistake();
     }
   }
 
   updateScoreText() {
-    const textObject = this.children.list.find(
-      (c) => c instanceof Phaser.GameObjects.Text
-    );
-    if (textObject) {
-      textObject.setText(
+    if (this.scoreText) {
+      this.scoreText.setText(
         `Sortierte Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
+      );
+    }
+  }
+
+  updateMistakeText() {
+    if (this.mistakeText) {
+      this.mistakeText.setText(
+        `Fehler: ${this.mistakesCount}/${MAX_MISTAKES_ALLOWED}`
       );
     }
   }
@@ -274,8 +314,13 @@ class LevelFourScene extends Phaser.Scene {
     });
 
     this.itemGroup.clear(true, true);
+
+    // Zähler zurücksetzen
     this.itemsDroppedCount = 0;
+    this.mistakesCount = 0;
     this.updateScoreText();
+    this.updateMistakeText();
+
     this.backgroundSprite.stop();
     this.backgroundSprite.setFrame(0);
   }
