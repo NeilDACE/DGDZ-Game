@@ -36,14 +36,14 @@ class LevelThreeScene extends Phaser.Scene {
   /** @type {{x: number, y: number}[]} */
   INGREDIENT_POSITIONS = [
     { x: 820, y: 560 },
-    { x: 85, y: 200 },
+    { x: 350, y: 520 },
     { x: 230, y: 330 },
+    { x: 85, y: 200 },
     { x: 300, y: 488 },
     { x: 910, y: 232 },
     { x: 896, y: 562 },
     { x: 180, y: 570 },
     { x: 250, y: 208 },
-    { x: 350, y: 520 },
     { x: 955, y: 420 },
   ];
 
