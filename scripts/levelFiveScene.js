@@ -6,11 +6,18 @@ class LevelFiveScene extends Phaser.Scene {
 
   preload() {
     this.load.image("bg", "assets/level-five/backgroundCanvas.png");
+
+    // Load Background Music
+    this.load.audio(
+      "bg_6_music",
+      "assets/audio/level-five-background-sound.mp3"
+    );
   }
 
   create() {
     // HTML-Klassen für dieses Level setzen
     this._setupHTMLClasses(true);
+    this._startBackgroundMusic();
 
     const width = this.game.config.width;
     const height = this.game.config.height;
@@ -99,6 +106,14 @@ class LevelFiveScene extends Phaser.Scene {
     this.randomizeGrid();
   }
 
+  _startBackgroundMusic() {
+    this.music = this.sound.add("bg_6_music", {
+      volume: 0.4,
+      loop: true,
+    });
+    this.music.play();
+  }
+
   // Kachel explizit setzen: hier machen wir das Glow-Design
   setTileState(x, y, isOn) {
     const tile = this.tiles[y][x];
@@ -159,6 +174,9 @@ class LevelFiveScene extends Phaser.Scene {
           // HTML-Klassen für dieses Level wieder entfernen
           this._setupHTMLClasses(false);
 
+          if (this.music) {
+            this.music.stop();
+          }
           // Nächste Szene starten (Namen anpassen, falls anders)
           this.scene.start("GameEndScene");
         });

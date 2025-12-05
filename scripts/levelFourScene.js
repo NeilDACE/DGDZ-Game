@@ -7,7 +7,7 @@ const ZONE_COORDINATES = [
 
 // Game mechanics constants
 const ITEM_FALL_SPEED_MS = 1500; // NEU: Dauer des Falls in Millisekunden (je kleiner, desto schneller)
-const ITEM_MOVE_DURATION = ITEM_FALL_SPEED_MS; 
+const ITEM_MOVE_DURATION = ITEM_FALL_SPEED_MS;
 const TOTAL_ITEMS_REQUIRED = 20;
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
 const SNAP_LINE_TOLERANCE = 50;
@@ -53,6 +53,12 @@ class LevelFourScene extends Phaser.Scene {
     this.load.image("item_red", "assets/level-four/items/holz.png");
     this.load.image("item_green", "assets/level-four/items/schraube.png");
     this.load.image("item_blue", "assets/level-four/items/metal.png");
+
+    // Load Background Music
+    this.load.audio(
+      "bg_5_music",
+      "assets/audio/level-four-background-sound.mp3"
+    );
   }
 
   create() {
@@ -60,30 +66,32 @@ class LevelFourScene extends Phaser.Scene {
     this.createBackground();
     this.createAnimations();
     this.createForegroundElements();
+    this._startBackgroundMusic();
 
     // Initialize game mechanics
     this.itemGroup = this.add.group();
     this.setupDropZones();
     this.createScoreText();
     this.setupDragEvents();
-    
+
     // Initialize success text (invisible at start)
-    this.completionText = this.add.text(
-      this.game.config.width / 2,
-      this.game.config.height / 2,
-      "Ordnung hergestellt!",
-      { 
-        font: "50px Arial", 
-        fill: "#f5f103ff",
-        backgroundColor: "#00000080", 
-        padding: { x: 20, y: 10 }
-      }
-    )
-    .setOrigin(0.5)
-    .setDepth(100) 
-    .setVisible(false);
+    this.completionText = this.add
+      .text(
+        this.game.config.width / 2,
+        this.game.config.height / 2,
+        "Ordnung hergestellt!",
+        {
+          font: "50px Arial",
+          fill: "#f5f103ff",
+          backgroundColor: "#00000080",
+          padding: { x: 20, y: 10 },
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(100)
+      .setVisible(false);
   }
-  
+
   // --- SCENE INITIALIZATION METHODS ---
 
   setupHtmlClasses() {
@@ -91,6 +99,14 @@ class LevelFourScene extends Phaser.Scene {
     document
       .getElementById("game-container")
       .classList.toggle("level4-game-container");
+  }
+
+  _startBackgroundMusic() {
+    this.music = this.sound.add("bg_5_music", {
+      volume: 0.4,
+      loop: true,
+    });
+    this.music.play();
   }
 
   createBackground() {
@@ -156,7 +172,7 @@ class LevelFourScene extends Phaser.Scene {
     gameObject.x = dragX;
     gameObject.y = dragY;
   }
-  
+
   handleItemDrop(pointer, gameObject, dropZone) {
     if (!dropZone) return;
 
@@ -189,12 +205,14 @@ class LevelFourScene extends Phaser.Scene {
     ZONE_COORDINATES.forEach((coords, i) => {
       this.dropOffZones.push({ x: coords.offX, y: coords.offY });
 
-      this.add.graphics({}).fillRect(
-        coords.inX - ZONE_SIZE / 2,
-        coords.inY,
-        ZONE_SIZE,
-        ZONE_SIZE / 2
-      );
+      this.add
+        .graphics({})
+        .fillRect(
+          coords.inX - ZONE_SIZE / 2,
+          coords.inY,
+          ZONE_SIZE,
+          ZONE_SIZE / 2
+        );
 
       const dropZone = this.add
         .zone(coords.inX, coords.inY + ZONE_SIZE / 4, ZONE_SIZE, ZONE_SIZE / 2)
@@ -235,12 +253,12 @@ class LevelFourScene extends Phaser.Scene {
     return this.tweens.add({
       targets: item,
       y: targetY,
-      duration: ITEM_MOVE_DURATION, 
+      duration: ITEM_MOVE_DURATION,
       ease: "Linear",
       onComplete: (tween, targets) => {
         const obj = targets[0];
         if (!obj || !obj.active) return;
-        
+
         this.checkItemLanding(obj);
       },
     });
@@ -269,7 +287,7 @@ class LevelFourScene extends Phaser.Scene {
 
     if (isCorrect) {
       this.processCorrectDrop();
-    } 
+    }
   }
 
   trySnapToDropOffLine(gameObject) {
@@ -293,9 +311,9 @@ class LevelFourScene extends Phaser.Scene {
 
     if (this.itemsDroppedCount >= TOTAL_ITEMS_REQUIRED) {
       this.setLeverState(false);
-      
+
       this.completionText.setVisible(true);
-      
+
       this.triggerSceneChange();
     }
   }
@@ -354,19 +372,27 @@ class LevelFourScene extends Phaser.Scene {
 
     this.backgroundSprite.stop();
     this.backgroundSprite.setFrame(0);
-    
+
     if (this.completionText) {
-        this.completionText.setVisible(false);
+      this.completionText.setVisible(false);
     }
   }
-  
+
   // --- SCENE CHANGE ---
-  
+
   triggerSceneChange() {
     // Delay scene change by 3 seconds
-    this.time.delayedCall(3000, () => {
+    this.time.delayedCall(
+      3000,
+      () => {
+        if (this.music) {
+          this.music.stop();
+        }
         // Change to the next scene (e.g., 'NextScene')
-        this.scene.start('LevelFiveScene');
-    }, [], this);
+        this.scene.start("LevelFiveScene");
+      },
+      [],
+      this
+    );
   }
 }
