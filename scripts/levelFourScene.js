@@ -12,6 +12,7 @@ const TOTAL_ITEMS_REQUIRED = 20;
 const ITEM_KEYS = ["item_red", "item_green", "item_blue"];
 const SNAP_LINE_TOLERANCE = 50;
 const ZONE_SIZE = 150;
+const MAX_MISTAKES_ALLOWED = 1; // Hinzugefügt: Maximal 1 Fehler erlaubt
 
 // MAIN SCENE CLASS
 class LevelFourScene extends Phaser.Scene {
@@ -24,9 +25,11 @@ class LevelFourScene extends Phaser.Scene {
   dropInZones = [];
   itemGroup;
   itemsDroppedCount = 0;
+  mistakesCount = 0; // HINZUGEFÜGT: Fehlerzähler
   itemSpawnTimer;
   scoreText;
   completionText;
+  failText; // HINZUGEFÜGT: Text bei Fehler
 
   constructor() {
     super("LevelFourScene");
@@ -52,9 +55,8 @@ class LevelFourScene extends Phaser.Scene {
     this.load.image("engine", "assets/level-four/engine.png");
     this.load.image("item_red", "assets/level-four/items/holz.png");
     this.load.image("item_green", "assets/level-four/items/schraube.png");
-    this.load.image("item_blue", "assets/level-four/items/metal.png");
+    this.load.image("item_blue", "assets/level-four/items/metal.png"); // Load Background Music
 
-    // Load Background Music
     this.load.audio(
       "bg_5_music",
       "assets/audio/level-four-background-sound.mp3"
@@ -66,33 +68,34 @@ class LevelFourScene extends Phaser.Scene {
     this.createBackground();
     this.createAnimations();
     this.createForegroundElements();
-    this._startBackgroundMusic();
+    this._startBackgroundMusic(); // Initialize game mechanics
 
-    // Initialize game mechanics
     this.itemGroup = this.add.group();
     this.setupDropZones();
     this.createScoreText();
-    this.setupDragEvents();
+    this.setupDragEvents(); // Initialize success text (invisible at start)
 
-    // Initialize success text (invisible at start)
-    this.completionText = this.add
-      .text(
-        this.game.config.width / 2,
-        this.game.config.height / 2,
-        "Ordnung hergestellt!",
-        {
-          font: "50px Arial",
-          fill: "#f5f103ff",
-          backgroundColor: "#00000080",
-          padding: { x: 20, y: 10 },
-        }
-      )
+    this.completionText = this.createCenteredText(
+      "Ordnung hergestellt!",
+      "#f5f103ff"
+    ); // HINZUGEFÜGT: Fehlertext
+    this.failText = this.createCenteredText("Versuche es erneut", "#ff0000ff");
+  } // HILFSFUNKTION für zentrierten Text
+  createCenteredText(text, fillColor) {
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+
+    return this.add
+      .text(centerX, centerY, text, {
+        font: "50px Arial",
+        fill: fillColor,
+        backgroundColor: "#00000080",
+        padding: { x: 20, y: 10 },
+      })
       .setOrigin(0.5)
       .setDepth(100)
       .setVisible(false);
-  }
-
-  // --- SCENE INITIALIZATION METHODS ---
+  } // --- SCENE INITIALIZATION METHODS ---
 
   setupHtmlClasses() {
     document.getElementById("bodyId").classList.toggle("level4-background");
@@ -140,15 +143,17 @@ class LevelFourScene extends Phaser.Scene {
   }
 
   createScoreText() {
-    this.scoreText = this.add.text(
-      410,
-      10,
-      `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`,
-      {
-        font: "20px Arial",
-        fill: "#ffffff",
-      }
-    );
+    this.scoreText = this.add
+      .text(
+        410,
+        10,
+        `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`,
+        {
+          font: "20px Arial",
+          fill: "#ffffff",
+        }
+      )
+      .setDepth(10); // Tiefe setzen, um sicher über dem Hintergrund zu sein
   }
 
   setupDragEvents() {
@@ -156,9 +161,7 @@ class LevelFourScene extends Phaser.Scene {
     this.input.on("drag", this.handleDrag, this);
     this.input.on("drop", this.handleItemDrop, this);
     this.input.on("dragend", this.handleDragEnd, this);
-  }
-
-  // --- DRAG EVENT HANDLERS ---
+  } // --- DRAG EVENT HANDLERS ---
 
   handleDragStart(pointer, gameObject) {
     const activeTween = gameObject.getData("fallTween");
@@ -182,7 +185,9 @@ class LevelFourScene extends Phaser.Scene {
     if (itemKey === dropZoneKey) {
       this.processCorrectDrop(gameObject);
     } else {
+      // FEHLER: Falsches Item in falsche Zone
       gameObject.destroy();
+      this.registerMistake(); // HINZUGEFÜGT
     }
   }
 
@@ -192,11 +197,11 @@ class LevelFourScene extends Phaser.Scene {
     if (this.trySnapToDropOffLine(gameObject)) {
       this.resumeItemFall(gameObject, ZONE_COORDINATES[0].inY, false);
     } else {
+      // FEHLER: Item außerhalb der Drop-Off-Linie fallen gelassen
       gameObject.destroy();
+      this.registerMistake(); // HINZUGEFÜGT
     }
-  }
-
-  // --- ITEM SPAWN AND FALL MECHANICS ---
+  } // --- ITEM SPAWN AND FALL MECHANICS ---
 
   setupDropZones() {
     this.dropOffZones = [];
@@ -287,6 +292,9 @@ class LevelFourScene extends Phaser.Scene {
 
     if (isCorrect) {
       this.processCorrectDrop();
+    } else {
+      // FEHLER: Item fiel zu Boden, aber nicht in die richtige Kiste
+      this.registerMistake(); // HINZUGEFÜGT
     }
   }
 
@@ -316,17 +324,29 @@ class LevelFourScene extends Phaser.Scene {
 
       this.triggerSceneChange();
     }
+  } // HINZUGEFÜGT: Zentrale Fehlerbehandlung
+  registerMistake() {
+    this.mistakesCount++;
+    if (this.mistakesCount >= MAX_MISTAKES_ALLOWED) {
+      // Nur 1 Fehler erlaubt. Level stoppen.
+      this.setLeverState(false);
+      this.failText.setVisible(true); // Blende den Fehlertext nach 3 Sekunden wieder aus
+      this.time.delayedCall(
+        3000,
+        () => this.failText.setVisible(false),
+        [],
+        this
+      );
+    }
   }
 
   updateScoreText() {
     if (this.scoreText) {
       this.scoreText.setText(
-        `Sorted Items: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
+        `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`
       );
     }
-  }
-
-  // --- LEVEL STATE CONTROL ---
+  } // --- LEVEL STATE CONTROL ---
 
   handleLeverClick() {
     this.setLeverState(!this.isLeverOn);
@@ -368,6 +388,7 @@ class LevelFourScene extends Phaser.Scene {
     this.itemGroup.clear(true, true);
 
     this.itemsDroppedCount = 0;
+    this.mistakesCount = 0; // HINZUGEFÜGT: Fehlerzähler zurücksetzen
     this.updateScoreText();
 
     this.backgroundSprite.stop();
@@ -376,9 +397,11 @@ class LevelFourScene extends Phaser.Scene {
     if (this.completionText) {
       this.completionText.setVisible(false);
     }
-  }
-
-  // --- SCENE CHANGE ---
+    if (this.failText) {
+      // HINZUGEFÜGT: Fehlertext ausblenden
+      this.failText.setVisible(false);
+    }
+  } // --- SCENE CHANGE ---
 
   triggerSceneChange() {
     // Delay scene change by 3 seconds
@@ -387,8 +410,7 @@ class LevelFourScene extends Phaser.Scene {
       () => {
         if (this.music) {
           this.music.stop();
-        }
-        // Change to the next scene (e.g., 'NextScene')
+        } // Change to the next scene (e.g., 'NextScene')
         this.scene.start("LevelFiveScene");
       },
       [],
