@@ -12,6 +12,10 @@ class LevelFiveScene extends Phaser.Scene {
       "bg_6_music",
       "assets/audio/level-five-background-sound.mp3"
     );
+
+    // 🔊 Success-/Intro-Sound für Level 5
+    // Pfad ggf. anpassen, z.B. dialog5.mp3 oder eine andere Datei
+    this.load.audio("success_sound_five", "assets/audio/dialog5.mp3");
   }
 
   create() {
@@ -112,6 +116,17 @@ class LevelFiveScene extends Phaser.Scene {
       loop: true,
     });
     this.music.play();
+
+    // 🔊 Intro-/Success-Sound direkt beim Start des Levels
+    this.startSuccessSound();
+  }
+
+  startSuccessSound() {
+    const successSound = this.sound.add("success_sound_five", {
+      volume: 0.7,
+      loop: false,
+    });
+    successSound.play();
   }
 
   // Kachel explizit setzen: hier machen wir das Glow-Design
@@ -178,7 +193,7 @@ class LevelFiveScene extends Phaser.Scene {
             this.music.stop();
           }
           // Nächste Szene starten (Namen anpassen, falls anders)
-          this.scene.start("GameEndScene");
+          this.scene.start("StoryOutroScene");
         });
       });
     }
