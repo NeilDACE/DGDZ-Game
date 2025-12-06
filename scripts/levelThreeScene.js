@@ -89,6 +89,7 @@ class LevelThreeScene extends Phaser.Scene {
       "bg_4_music",
       "assets/audio/level-three-background-sound.mp3"
     );
+    this.load.audio("success_sound", "assets/audio/dialog3.mp3");
   }
 
   /**
@@ -141,14 +142,31 @@ class LevelThreeScene extends Phaser.Scene {
   }
 
   /**
-   * Starts the scene's background music.
+   * Starts the scene's background music and triggers success sound 2s later.
    */
   _startBackgroundMusic() {
     this.music = this.sound.add("bg_4_music", {
       volume: 0.4,
       loop: true,
     });
-    this.music.play();
+    this.time.delayedCall(12000, () => {
+      this.music.play();
+    });
+
+    // Success-Sound 2 Sekunden nach Start der Hintergrundmusik
+
+    this.startSuccessSound();
+  }
+
+  /**
+   * Plays the success / intro sound once.
+   */
+  startSuccessSound() {
+    const successSound = this.sound.add("success_sound", {
+      volume: 0.7,
+      loop: false,
+    });
+    successSound.play();
   }
 
   /**
@@ -164,9 +182,7 @@ class LevelThreeScene extends Phaser.Scene {
 
     this._updateBackgroundFramerate();
 
-    this.feedbackText.setText(
-      `Zutaten: 0/${this.TOTAL_INGREDIENTS}`
-    );
+    this.feedbackText.setText(`Zutaten: 0/${this.TOTAL_INGREDIENTS}`);
   }
 
   /**
@@ -257,16 +273,12 @@ class LevelThreeScene extends Phaser.Scene {
         this._levelComplete(); // Call internal method for completion
       } else {
         this.feedbackText.setText(
-          `Zutaten: ${this.ingredientsCollected}/${
-            this.TOTAL_INGREDIENTS
-          }`
+          `Zutaten: ${this.ingredientsCollected}/${this.TOTAL_INGREDIENTS}`
         );
       }
     } else {
       // --- WRONG INGREDIENT DROPPED: LEVEL RESET ---
-      this.feedbackText.setText(
-        `Falsche Zutat! Alle Zutaten zurückgesetzt!`
-      );
+      this.feedbackText.setText(`Falsche Zutat! Alle Zutaten zurückgesetzt!`);
 
       this.time.delayedCall(1500, this.resetLevel, [], this);
     }
@@ -332,7 +344,7 @@ class LevelThreeScene extends Phaser.Scene {
       this.music.stop();
     }
 
-    // Transition to the final scene (assuming it's 'finalScene') after a delay
+    // Transition to the final scene (assuming it's 'LevelFourScene') after a delay
     this.time.delayedCall(3000, () => {
       this.scene.start("LevelFourScene"); // Passe dies bei Bedarf an den Key deiner End-Szene an
     });
