@@ -3,7 +3,7 @@
 }
 
 .level1-background {
-  background-image: url("assets/level-one/background-canvas.png");
+  background-image: url("../assets/level-one/background-canvas.png");
   background-size: cover;
   background-position: center;
 }
@@ -13,7 +13,7 @@
 }
 
 .level2-background {
-  background-image: url("assets/level-two/backgroundEgyptOutCanvas.png");
+  background-image: url("../assets/level-two/backgroundEgyptOutCanvas.png");
   background-size: cover;
   background-position: center;
 }
@@ -23,7 +23,7 @@
 }
 
 .level3-background {
-  background-image: url("assets/level-three/Background-levelThreeScene.png");
+  background-image: url("../assets/level-three/Background-levelThreeScene.png");
   background-size: cover;
   background-position: center;
 }
@@ -32,7 +32,7 @@
   border: 2px solid rgb(242, 202, 0, 0.3);
 }
 .level4-background {
-  background-image: url("assets/level-four/factory-background-canvas.png");
+  background-image: url("../assets/level-four/factory-background-canvas.png");
   background-size: cover;
   background-position: center;
 }
@@ -42,7 +42,7 @@
 }
 
 .level5-background {
-  background-image: url("assets/level-five/backgroundOutCanvas.png");
+  background-image: url("../assets/level-five/backgroundOutCanvas.png");
   background-size: cover;
   background-position: center;
 }
