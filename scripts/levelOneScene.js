@@ -72,7 +72,7 @@ class LevelOneScene extends Phaser.Scene {
       "bg_2_music",
       "assets/audio/level-one-background-sound.mp3"
     );
-    this.load.audio("success_sound_one", "/assets/audio/dialog1ver2.mp3");
+    this.load.audio("success_sound_one", "assets/audio/dialog1ver2.mp3");
   }
 
   /**
