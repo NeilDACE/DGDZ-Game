@@ -161,7 +161,7 @@ class StoryOutroScene extends Phaser.Scene {
       if (this.music) {
         this.music.stop(); // Stop music before changing scene
       }
-      this.scene.start("levelOneScene");
+      this.scene.start("LevelCreditsScene");
     }
   }
 }

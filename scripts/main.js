@@ -13,10 +13,10 @@ const config = {
     LevelFourScene,
     LevelFiveScene,
     StoryOutroScene,
-    LevelCreditsScene,
+    LevelCreditsScene
   ],
 };
 /**
- * [GameMenuScene,StoryTellingScene, LevelOneScene, LevelTwoScene, LevelThreeScene, LevelFourScene, LevelFiveScene, StoryOutroScene]
+ * [GameMenuScene,StoryTellingScene, LevelOneScene, LevelTwoScene, LevelThreeScene, LevelFourScene, LevelFiveScene, StoryOutroScene, LevelCreditsScene]
  */
 const game = new Phaser.Game(config);

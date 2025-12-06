@@ -112,7 +112,7 @@ class LevelCreditsScene extends Phaser.Scene {
     this._setupHTMLClasses(false);
 
     // Zurück zum Start
-    this.scene.start("MainMenuScene"); // Falls du irgendwann ein Hauptmenü hast
+    this.scene.start("GameMenuScene"); // Falls du irgendwann ein Hauptmenü hast
     // Oder alternativ: Reload → this.scene.start("levelOneScene");
   }
 
