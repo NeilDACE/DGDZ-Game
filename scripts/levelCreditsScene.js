@@ -43,16 +43,16 @@ class LevelCreditsScene extends Phaser.Scene {
 
         Projektleitung:
         - Alexander Vielkind
-        - Nill Vollhardt
+        - Nil Vollhardt
 
         Programmierung:
         - Alexander Vielkind
-        - Nill Vollhardt
+        - Nil Vollhardt
 
 
         Grafik & Design:
         - Alexander Vielkind
-        - Nill Vollhardt
+        - Nil Vollhardt
 
 
         Musik & Sound:
@@ -61,17 +61,18 @@ class LevelCreditsScene extends Phaser.Scene {
 
         Story:
         - Alexander Vielkind
-        - Nill Vollhardt
+        - Nil Vollhardt
 
         QA & Testing:
         - Alexander Vielkind
-        - Nill Vollhardt
+        - Nil Vollhardt
 
         Besonderer Dank:
         - An ChatGPT für die Unterstützung bei der Image-Generierung
         - An alle, die uns Feedback gegeben haben
 
-        © 2025 Projekt Die Geschichte der zwei - Ursprung der Welt • Alle Rechte vorbehalten
+        © 2025 Projekt Die Geschichte der Zwei - Ursprung der Welt • 
+        Alle Rechte vorbehalten
     `;
 
     // Textobjekt erzeugen (startet unter dem Bildschirm)
