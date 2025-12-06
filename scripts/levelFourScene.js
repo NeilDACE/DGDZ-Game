@@ -67,6 +67,16 @@ class LevelFourScene extends Phaser.Scene {
       "bg_5_music",
       "assets/audio/level-four-background-sound.mp3"
     );
+
+    this.load.audio(
+      "engine-sound",
+      "assets/audio/engine-on-sound.mp3"
+    );
+
+    this.load.audio(
+      "success_sound_four",
+      "assets/audio/dialog4.mp3"
+    );
   }
 
   create() {
