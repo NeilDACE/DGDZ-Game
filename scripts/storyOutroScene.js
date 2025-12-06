@@ -33,7 +33,7 @@ class StoryOutroScene extends Phaser.Scene {
   music = null; // Stored reference for the music object
 
   constructor() {
-    super("storyOutroScene");
+    super("StoryOutroScene");
   }
 
   /**
