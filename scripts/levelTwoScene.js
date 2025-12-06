@@ -48,13 +48,18 @@ class LevelTwoScene extends Phaser.Scene {
 
     // Optional overlays/audio
     this.load.image("sand_overlay", "assets/sand_overlay.png");
+
+    // Hintergrundmusik Level 2
     this.load.audio(
       "bg_3_music",
       "assets/audio/level-two-background-sound.mp3"
     );
 
+    // Success-Sound (z.B. Erzähler/Intro)
+    this.load.audio("success_sound", "assets/audio/dialog2.mp3");
+
     // 🔊 Sound wenn ein Puzzleteil richtig eingesetzt wird
-    this.load.audio("piece_place", "/assets/audio/puzzle-sound.mp3");
+    this.load.audio("piece_place", "assets/audio/puzzle-sound.mp3");
   }
 
   /**
@@ -216,14 +221,15 @@ class LevelTwoScene extends Phaser.Scene {
    * Toggles the necessary HTML classes for the scene.
    */
   _setupHTMLClasses() {
-    document.getElementById("bodyId").classList.toggle("level2-background");
+    document.getElementById("bodyId")?.classList.toggle("level2-background");
     document
       .getElementById("game-container")
-      .classList.toggle("level2-game-container");
+      ?.classList.toggle("level2-game-container");
   }
 
   /**
    * Starts the scene's background music.
+   * Plays the success sound 2 seconds after the background music starts.
    */
   _startBackgroundMusic() {
     if (this.music) return;
@@ -233,13 +239,36 @@ class LevelTwoScene extends Phaser.Scene {
       loop: true,
     });
 
+    const playMusic = () => {
+      if (this.music && !this.music.isPlaying) {
+        this.music.play();
+      }
+    };
+
+    // Browser-Autoplay-Handling (Sound-UNLOCK)
     if (this.sound.locked) {
       this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
-        this.music.play();
+        playMusic();
       });
     } else {
-      this.music.play();
+      playMusic();
     }
+
+    // Success-Sound 2 Sekunden nach Start der Hintergrundmusik
+    this.time.delayedCall(2000, () => {
+      this.startSuccessSound();
+    });
+  }
+
+  /**
+   * Plays the success / intro sound once.
+   */
+  startSuccessSound() {
+    const successSound = this.sound.add("success_sound", {
+      volume: 0.7,
+      loop: false,
+    });
+    successSound.play();
   }
 
   /**
