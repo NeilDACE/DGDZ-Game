@@ -6,7 +6,7 @@ class GameMenuScene extends Phaser.Scene {
   music = null;
 
   constructor() {
-    super("gameMenuScene");
+    super("GameMenuScene");
   }
 
   /**
