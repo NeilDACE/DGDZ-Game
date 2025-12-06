@@ -16,6 +16,7 @@ class LevelFiveScene extends Phaser.Scene {
 
   create() {
     // HTML-Klassen für dieses Level setzen
+    this.cameras.main.fadeIn(1000, 0, 0, 0);
     this._setupHTMLClasses(true);
     this._startBackgroundMusic();
 
@@ -178,7 +179,14 @@ class LevelFiveScene extends Phaser.Scene {
             this.music.stop();
           }
           // Nächste Szene starten (Namen anpassen, falls anders)
-          this.scene.start("GameEndScene");
+          this.cameras.main.fadeOut(1000, 0, 0, 0); // 1000ms, R=0, G=0, B=0 (Schwarz)
+          this.cameras.main.once(
+            Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+            (cam, effect) => {
+              // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
+              this.scene.start("StoryOutroScene");
+            }
+          );
         });
       });
     }

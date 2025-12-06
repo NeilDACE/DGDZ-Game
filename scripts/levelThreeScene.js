@@ -96,6 +96,7 @@ class LevelThreeScene extends Phaser.Scene {
    * Creates the game objects and sets up the level environment.
    */
   create() {
+    this.cameras.main.fadeIn(1000, 0, 0, 0);
     this._setupHTMLClasses();
     const { width, height } = this.sys.game.config;
 
@@ -346,7 +347,14 @@ class LevelThreeScene extends Phaser.Scene {
 
     // Transition to the final scene (assuming it's 'LevelFourScene') after a delay
     this.time.delayedCall(3000, () => {
-      this.scene.start("LevelFourScene"); // Passe dies bei Bedarf an den Key deiner End-Szene an
+      this.cameras.main.fadeOut(1000, 0, 0, 0); // 1000ms, R=0, G=0, B=0 (Schwarz)
+        this.cameras.main.once(
+          Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+          (cam, effect) => {
+            // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
+            this.scene.start("LevelFourScene");
+          }
+        );
     });
   }
 }

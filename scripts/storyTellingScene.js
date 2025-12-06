@@ -164,7 +164,15 @@ class StoryTellingScene extends Phaser.Scene {
       if (this.music) {
         this.music.stop(); // Stop music before changing scene
       }
-      this.scene.start("levelOneScene");
+      this.cameras.main.fadeOut(1000, 0, 0, 0); // 1000ms, R=0, G=0, B=0 (Schwarz)
+
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        (cam, effect) => {
+          // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
+          this.scene.start("levelOneScene");
+        }
+      );
     }
   }
 }

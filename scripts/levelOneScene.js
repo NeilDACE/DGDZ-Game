@@ -79,6 +79,7 @@ class LevelOneScene extends Phaser.Scene {
    * Creates the game objects and sets up the level.
    */
   create() {
+    this.cameras.main.fadeIn(1000, 0, 0, 0);
     this._setupHTMLClasses();
     const { width } = this.sys.game.config;
 
@@ -312,7 +313,15 @@ class LevelOneScene extends Phaser.Scene {
       if (this.music) {
         this.music.stop();
       }
-      this.scene.start("levelTwoScene");
+      this.cameras.main.fadeOut(1000, 0, 0, 0); // 1000ms, R=0, G=0, B=0 (Schwarz)
+
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        (cam, effect) => {
+          // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
+          this.scene.start("levelTwoScene");
+        }
+      );
     });
   }
 
