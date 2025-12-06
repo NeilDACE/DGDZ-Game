@@ -5,15 +5,7 @@ const config = {
   parent: "game-container",
   backgroundColor: "#000000",
   scene: [
-    GameMenuScene,
-    StoryTellingScene,
-    LevelOneScene,
-    LevelTwoScene,
-    LevelThreeScene,
-    LevelFourScene,
-    LevelFiveScene,
-    StoryOutroScene,
-    LevelCreditsScene
+    LevelThreeScene
   ],
 };
 /**

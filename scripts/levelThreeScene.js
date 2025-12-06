@@ -89,6 +89,12 @@ class LevelThreeScene extends Phaser.Scene {
       "bg_4_music",
       "assets/audio/level-three-background-sound.mp3"
     );
+
+    this.load.audio(
+      "water-sound",
+      "assets/audio/water-drop-sound.mp3"
+    );
+
     this.load.audio("success_sound_three", "assets/audio/dialog3.mp3");
   }
 
@@ -168,6 +174,14 @@ class LevelThreeScene extends Phaser.Scene {
       loop: false,
     });
     successSound.play();
+  }
+
+  _startWaterSound() {
+    const waterSound = this.sound.add("water-sound", {
+      volume: 0.7,
+      loop: false,
+    });
+    waterSound.play();
   }
 
   /**
@@ -264,6 +278,7 @@ class LevelThreeScene extends Phaser.Scene {
 
     if (item.name === requiredKey) {
       // --- CORRECT INGREDIENT DROPPED ---
+      this._startWaterSound();
       item.destroy();
       this.ingredientsCollected++;
       this.currentSequenceIndex++;
