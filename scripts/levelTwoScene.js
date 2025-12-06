@@ -46,9 +46,6 @@ class LevelTwoScene extends Phaser.Scene {
     this.load.image("piece_camel", "assets/level-two/camel.png");
     this.load.image("piece_human", "assets/level-two/mensch.png");
 
-    // Optional overlays/audio
-    this.load.image("sand_overlay", "assets/sand_overlay.png");
-
     // Hintergrundmusik Level 2
     this.load.audio(
       "bg_3_music",
@@ -78,12 +75,6 @@ class LevelTwoScene extends Phaser.Scene {
       .setDepth(0);
     let scale = Math.max(width / bg.width, height / bg.height);
     bg.setScale(scale);
-
-    // === Sand Overlay ===
-    this.sandOverlay = this.add
-      .image(width / 2, height / 2, "sand_overlay")
-      .setDepth(20)
-      .setAlpha(0);
 
     // === Target Positions ===
     this.targets = [
