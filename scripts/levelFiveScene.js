@@ -37,7 +37,7 @@ class LevelFiveScene extends Phaser.Scene {
     this.tileSize = 56; // etwas kleiner, damit alles gut reinpasst
 
     // Schwierigkeitsgrad: wie viele "virtuelle Klicks" wir machen
-    this.mixClicks = 6;
+    this.mixClicks = 8;
 
     // Raster zentrieren
     this.offsetX = (width - this.cols * this.tileSize) / 2;
