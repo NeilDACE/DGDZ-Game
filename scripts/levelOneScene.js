@@ -72,7 +72,7 @@ class LevelOneScene extends Phaser.Scene {
       "bg_2_music",
       "assets/audio/level-one-background-sound.mp3"
     );
-    this.load.audio("success_sound", "/assets/audio/dialog1ver2.mp3");
+    this.load.audio("success_sound_one", "/assets/audio/dialog1ver2.mp3");
   }
 
   /**
@@ -140,7 +140,7 @@ class LevelOneScene extends Phaser.Scene {
    * Plays the success sound once.
    */
   startSuccessSound() {
-    const successSound = this.sound.add("success_sound", {
+    const successSound = this.sound.add("success_sound_one", {
       volume: 0.7,
       loop: false,
     });

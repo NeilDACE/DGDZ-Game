@@ -56,7 +56,7 @@ class LevelTwoScene extends Phaser.Scene {
     );
 
     // Success-Sound (z.B. Erzähler/Intro)
-    this.load.audio("success_sound", "assets/audio/dialog2.mp3");
+    this.load.audio("success_sound_two", "assets/audio/dialog2.mp3");
 
     // 🔊 Sound wenn ein Puzzleteil richtig eingesetzt wird
     this.load.audio("piece_place", "assets/audio/puzzle-sound.mp3");
@@ -265,7 +265,7 @@ class LevelTwoScene extends Phaser.Scene {
    * Plays the success / intro sound once.
    */
   startSuccessSound() {
-    const successSound = this.sound.add("success_sound", {
+    const successSound = this.sound.add("success_sound_two", {
       volume: 0.7,
       loop: false,
     });
