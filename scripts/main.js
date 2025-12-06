@@ -4,7 +4,17 @@ const config = {
   height: 600,
   parent: "game-container",
   backgroundColor: "#000000",
-  scene: [GameMenuScene,StoryTellingScene, LevelOneScene, LevelTwoScene, LevelThreeScene, LevelFourScene, LevelFiveScene, StoryOutroScene],
+  scene: [
+    GameMenuScene,
+    StoryTellingScene,
+    LevelOneScene,
+    LevelTwoScene,
+    LevelThreeScene,
+    LevelFourScene,
+    LevelFiveScene,
+    StoryOutroScene,
+    LevelCreditsScene,
+  ],
 };
 /**
  * [GameMenuScene,StoryTellingScene, LevelOneScene, LevelTwoScene, LevelThreeScene, LevelFourScene, LevelFiveScene, StoryOutroScene]
