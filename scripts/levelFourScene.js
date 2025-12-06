@@ -61,6 +61,8 @@ class LevelFourScene extends Phaser.Scene {
       "bg_5_music",
       "assets/audio/level-four-background-sound.mp3"
     );
+
+    this.load.audio("engine-sound", "assets/audio/engine-on-sound.mp3");
   }
 
   create() {
@@ -110,6 +112,14 @@ class LevelFourScene extends Phaser.Scene {
       loop: true,
     });
     this.music.play();
+  }
+
+  _startEngineSound() {
+    this.engineSound = this.sound.add("engine-sound", {
+      volume: 0.1,
+      loop: true,
+    });
+    this.engineSound.play();
   }
 
   createBackground() {
@@ -358,9 +368,13 @@ class LevelFourScene extends Phaser.Scene {
     if (state) {
       this.leverSprite.setFrame(1);
       this.startLevel();
+      this._startEngineSound();
     } else {
       this.leverSprite.setFrame(0);
       this.stopLevel();
+      if (this.engineSound) {
+        this.engineSound.stop();
+      }
     }
   }
 
