@@ -21,7 +21,7 @@ class LevelFiveScene extends Phaser.Scene {
   create() {
     // HTML-Klassen für dieses Level setzen
     this.cameras.main.fadeIn(1000, 0, 0, 0);
-    this._setupHTMLClasses(true);
+    this.setupHtmlClasses();
     this._startBackgroundMusic();
 
     const width = this.game.config.width;
@@ -187,8 +187,6 @@ class LevelFiveScene extends Phaser.Scene {
       // Kleines Delay, damit der aktuelle Klick NICHT den Szenenwechsel auslöst
       this.time.delayedCall(200, () => {
         this.input.once("pointerdown", () => {
-          // HTML-Klassen für dieses Level wieder entfernen
-          this._setupHTMLClasses(false);
 
           if (this.music) {
             this.music.stop();
@@ -237,15 +235,11 @@ class LevelFiveScene extends Phaser.Scene {
   }
 
   // HTML-Klassen für dieses Level setzen/entfernen
-  _setupHTMLClasses(add = true) {
-    if (typeof document === "undefined") return;
-
-    const body = document.getElementById("bodyId");
-    const container = document.getElementById("game-container");
-    if (!body || !container) return;
-
-    body.classList[add ? "add" : "remove"]("level5-background");
-    container.classList[add ? "add" : "remove"]("level5-game-container");
+  setupHtmlClasses() {
+    document.getElementById("bodyId").classList.toggle("level5-background");
+    document
+      .getElementById("game-container")
+      .classList.toggle("level5-game-container");
   }
 
   // Ziel: ALLE Felder AN

@@ -51,6 +51,7 @@
   border: 2px solid rgb(242, 202, 0, 0.3);
 }
 .levelOutro-background {
+  background-image: none;
   background-color: black;
   background-size: cover;
   background-position: center;

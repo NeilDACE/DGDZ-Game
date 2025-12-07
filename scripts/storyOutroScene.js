@@ -129,6 +129,9 @@ class StoryOutroScene extends Phaser.Scene {
 
   setupHtmlClasses() {
     document.getElementById("bodyId").classList.toggle("levelOutro-background");
+    document
+      .getElementById("game-container")
+      .classList.toggle("level5-game-container");
   }
 
   /**
