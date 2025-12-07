@@ -89,6 +89,15 @@ class LevelOneScene extends Phaser.Scene {
     this.add
       .text(width / 2, 20, "Level 1: Ordne die Planeten", {
         fontSize: "28px",
+        fontfamily: "Macondo",
+        color: "#00ffe0",
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(width / 2, 60, "Ziehe die Planeten in die richtige Reihenfolge!", {
+        fontSize: "20px",
+        fontfamily: "Macondo",
         fill: "#FFD700",
       })
       .setOrigin(0.5);
@@ -193,6 +202,7 @@ class LevelOneScene extends Phaser.Scene {
         height - 30,
         `Ordnung: ${this.orderAchieved}/${this.totalChaos}`,
         {
+          fontfamily: "Macondo",
           fontSize: "24px",
           fill: "#FFD700",
         }

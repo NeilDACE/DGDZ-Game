@@ -187,6 +187,7 @@ class LevelTwoScene extends Phaser.Scene {
     // Info Text (Titel)
     this.infoText = this.add
       .text(width / 2, 40, "Level 2: Setze die fehlenden Teile ein", {
+        fontfamily: "Macondo",
         fontSize: "24px",
         color: "#ffffff",
       })
@@ -196,6 +197,7 @@ class LevelTwoScene extends Phaser.Scene {
     // Fortschrittsanzeige: unten mittig
     this.progressText = this.add
       .text(width / 2, height - 40, "", {
+        fontfamily: "Macondo",
         fontSize: "24px",
         color: "#ffffff",
       })

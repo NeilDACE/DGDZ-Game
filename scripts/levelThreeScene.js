@@ -90,10 +90,7 @@ class LevelThreeScene extends Phaser.Scene {
       "assets/audio/level-three-background-sound.mp3"
     );
 
-    this.load.audio(
-      "water-sound",
-      "assets/audio/water-drop-sound.mp3"
-    );
+    this.load.audio("water-sound", "assets/audio/water-drop-sound.mp3");
 
     this.load.audio("success_sound_three", "assets/audio/dialog3.mp3");
   }
@@ -124,6 +121,7 @@ class LevelThreeScene extends Phaser.Scene {
     this.feedbackText = this.add
       .text(width / 2, height - 30, `Wird geladen...`, {
         fontSize: "24px",
+        fontfamily: "Macondo",
         fill: "#FFFF00",
         backgroundColor: "#1e1e1e75",
         padding: { x: 10, y: 5 },
@@ -363,13 +361,13 @@ class LevelThreeScene extends Phaser.Scene {
     // Transition to the final scene (assuming it's 'LevelFourScene') after a delay
     this.time.delayedCall(3000, () => {
       this.cameras.main.fadeOut(1000, 0, 0, 0); // 1000ms, R=0, G=0, B=0 (Schwarz)
-        this.cameras.main.once(
-          Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
-          (cam, effect) => {
-            // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
-            this.scene.start("LevelFourScene");
-          }
-        );
+      this.cameras.main.once(
+        Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+        (cam, effect) => {
+          // Wenn der Fade-Out abgeschlossen ist, zur nächsten Szene wechseln
+          this.scene.start("LevelFourScene");
+        }
+      );
     });
   }
 }

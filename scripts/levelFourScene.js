@@ -68,15 +68,9 @@ class LevelFourScene extends Phaser.Scene {
       "assets/audio/level-four-background-sound.mp3"
     );
 
-    this.load.audio(
-      "engine-sound",
-      "assets/audio/engine-on-sound.mp3"
-    );
+    this.load.audio("engine-sound", "assets/audio/engine-on-sound.mp3");
 
-    this.load.audio(
-      "success_sound_four",
-      "assets/audio/dialog4.mp3"
-    );
+    this.load.audio("success_sound_four", "assets/audio/dialog4.mp3");
   }
 
   create() {
@@ -94,7 +88,7 @@ class LevelFourScene extends Phaser.Scene {
 
     this.completionText = this.createCenteredText(
       "Ordnung hergestellt!",
-      "#f5f103ff"
+      "#f5f103ff, Macondo"
     );
     this.failText = this.createCenteredText("Versuche es erneut", "#ff0000ff");
   }
@@ -106,7 +100,7 @@ class LevelFourScene extends Phaser.Scene {
 
     return this.add
       .text(centerX, centerY, text, {
-        font: "50px Arial",
+        font: "50px Macondo",
         fill: fillColor,
         backgroundColor: "#00000080",
         padding: { x: 20, y: 10 },
@@ -184,7 +178,7 @@ class LevelFourScene extends Phaser.Scene {
         10,
         `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`,
         {
-          font: "20px Arial",
+          font: "20px Macondo",
           fill: "#ffffff",
         }
       )
