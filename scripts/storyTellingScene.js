@@ -50,6 +50,7 @@ class StoryTellingScene extends Phaser.Scene {
    * Sets up the scene, including background, story text, and typing effect.
    */
   create() {
+    document.getElementById("gameMenuFooter").classList.toggle("hidden");
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
 

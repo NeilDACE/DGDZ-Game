@@ -1,6 +1,10 @@
 body {
   margin: 0;
   background: #000;
+}
+
+main {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,4 +33,26 @@ canvas {
   width: 250px;
   height: auto;
   object-fit: contain;
+}
+
+footer {
+  position: absolute;
+  height: 10vh;
+  width: 100vw;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  align-items: center;
+
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+a:hover {
+ text-decoration: underline;
+ color: #1E354C;
 }

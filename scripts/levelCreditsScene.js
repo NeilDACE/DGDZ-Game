@@ -15,6 +15,7 @@ class LevelCreditsScene extends Phaser.Scene {
   }
 
   create() {
+    document.getElementById("gameMenuFooter").classList.toggle("hidden");
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
     
