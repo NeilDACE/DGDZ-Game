@@ -89,26 +89,21 @@ class LevelOneScene extends Phaser.Scene {
     this.add
       .text(width / 2, 20, "Level 1: Ordne die Planeten", {
         fontSize: "28px",
-        fontfamily: "Macondo",
-        color: "#00ffe0",
+        fontFamily: "Macondo",
+        color: "#FFD700",
       })
       .setOrigin(0.5);
 
     this.add
       .text(width / 2, 60, "Ziehe die Planeten in die richtige Reihenfolge!", {
-        fontSize: "20px",
-        fontfamily: "Macondo",
+        fontSize: "24px",
+        fontFamily: "Macondo",
         fill: "#FFD700",
       })
       .setOrigin(0.5);
 
     this._addTargetsAndPlanets();
     this._addFeedbackText();
-
-    this._showMessage(
-      "Bringe die Planeten in ihre korrekte\nReihenfolge und ziehe sie auf die Ziellinie!",
-      4000
-    );
 
     // Optional: Drag-Schwelle einmal global setzen
     this.input.dragDistanceThreshold = 10;
@@ -125,7 +120,7 @@ class LevelOneScene extends Phaser.Scene {
     document.getElementById("bodyId").classList.toggle("level1-background");
     document
       .getElementById("game-container")
-      .classList.toggle("level1-game-container");
+      .classList.toggle("level-game-container");
   }
 
   /**
@@ -202,7 +197,7 @@ class LevelOneScene extends Phaser.Scene {
         height - 30,
         `Ordnung: ${this.orderAchieved}/${this.totalChaos}`,
         {
-          fontfamily: "Macondo",
+          fontFamily: "Macondo",
           fontSize: "24px",
           fill: "#FFD700",
         }
@@ -314,7 +309,7 @@ class LevelOneScene extends Phaser.Scene {
    */
   _levelComplete() {
     this._showMessage(
-      "Das Chaos ist gebannt!\nDu hast die Planeten erfolgreich in\ndie richtige Umlaufbahn gebracht.",
+      "Ordnung hergestellt!",
       5000
     );
 
@@ -364,12 +359,11 @@ class LevelOneScene extends Phaser.Scene {
 
     const { width, height } = this.sys.game.config;
     const message = this.add
-      .text(width / 2, height / 4, text, {
-        fontSize: "24px",
+      .text(width / 2, 150, text, {
+        fontSize: "48px",
+        fontFamily: "Macondo",
         fill: "#FFD700",
         align: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
-        padding: 10,
       })
       .setOrigin(0.5)
       .setDepth(100);

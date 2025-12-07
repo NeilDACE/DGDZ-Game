@@ -187,9 +187,9 @@ class LevelTwoScene extends Phaser.Scene {
     // Info Text (Titel)
     this.infoText = this.add
       .text(width / 2, 40, "Level 2: Setze die fehlenden Teile ein", {
-        fontfamily: "Macondo",
-        fontSize: "24px",
-        color: "#ffffff",
+        fontFamily: "Macondo",
+        fontSize: "28px",
+        color: "#FFD700",
       })
       .setOrigin(0.5)
       .setDepth(30);
@@ -197,9 +197,9 @@ class LevelTwoScene extends Phaser.Scene {
     // Fortschrittsanzeige: unten mittig
     this.progressText = this.add
       .text(width / 2, height - 40, "", {
-        fontfamily: "Macondo",
+        fontFamily: "Macondo",
         fontSize: "24px",
-        color: "#ffffff",
+        color: "#FFD700",
       })
       .setOrigin(0.5)
       .setDepth(30);
@@ -216,9 +216,6 @@ class LevelTwoScene extends Phaser.Scene {
    */
   _setupHTMLClasses() {
     document.getElementById("bodyId")?.classList.toggle("level2-background");
-    document
-      .getElementById("game-container")
-      ?.classList.toggle("level2-game-container");
   }
 
   /**

@@ -55,8 +55,8 @@ class LevelFiveScene extends Phaser.Scene {
     // Titel
     this.add
       .text(width / 2, 30, "Level 5: Quanten-KI-Computer", {
-        fontSize: "26px",
-        color: "#00ffe0",
+        fontSize: "28px",
+        color: "#FFD700",
         fontFamily: "Macondo",
       })
       .setOrigin(0.5);
@@ -67,15 +67,15 @@ class LevelFiveScene extends Phaser.Scene {
         width / 2,
         60,
         "Ziel: Alle Felder AN, um den Computer einzuschalten.",
-        { fontSize: "16px", fontFamily: "Macondo", color: "#ccccff" }
+        { fontSize: "16px", fontFamily: "Macondo", color: "#FFD700" }
       )
       .setOrigin(0.5);
 
     // Gewinn-Text
     this.winText = this.add
       .text(width / 2, height - 30, "", {
-        fontSize: "20px",
-        color: "#ffffff",
+        fontSize: "24px",
+        color: "#FFD700",
         align: "center",
         fontFamily: "Macondo",
       })
@@ -238,9 +238,6 @@ class LevelFiveScene extends Phaser.Scene {
   // HTML-Klassen für dieses Level setzen/entfernen
   setupHtmlClasses() {
     document.getElementById("bodyId").classList.toggle("level5-background");
-    document
-      .getElementById("game-container")
-      .classList.toggle("level5-game-container");
   }
 
   // Ziel: ALLE Felder AN

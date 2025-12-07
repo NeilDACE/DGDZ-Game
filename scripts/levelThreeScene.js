@@ -118,12 +118,20 @@ class LevelThreeScene extends Phaser.Scene {
 
     this.ingredientsGroup = this.add.group();
 
+    // Titel
+    this.add
+      .text(width / 2, 30, "Level 3: Trank der Ordnung", {
+        fontSize: "28px",
+        color: "#FFD700",
+        fontFamily: "Macondo",
+      })
+      .setOrigin(0.5);
+
     this.feedbackText = this.add
       .text(width / 2, height - 30, `Wird geladen...`, {
         fontSize: "24px",
-        fontfamily: "Macondo",
-        fill: "#FFFF00",
-        backgroundColor: "#1e1e1e75",
+        fontFamily: "Macondo",
+        fill: "#FFD700",
         padding: { x: 10, y: 5 },
       })
       .setOrigin(0.5)
@@ -141,9 +149,6 @@ class LevelThreeScene extends Phaser.Scene {
    */
   _setupHTMLClasses() {
     document.getElementById("bodyId").classList.toggle("level3-background");
-    document
-      .getElementById("game-container")
-      .classList.toggle("level3-game-container");
   }
 
   /**

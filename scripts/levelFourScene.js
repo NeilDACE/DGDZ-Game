@@ -86,23 +86,30 @@ class LevelFourScene extends Phaser.Scene {
     this.createScoreText();
     this.setupDragEvents();
 
+    this.add
+      .text(480, 20, "Level 4: Fabrik außer Kontrolle", {
+        fontSize: "28px",
+        color: "#FFD700",
+        fontFamily: "Macondo",
+      })
+      .setOrigin(0.5);
+
     this.completionText = this.createCenteredText(
-      "Ordnung hergestellt!",
-      "#f5f103ff, Macondo"
+      "Ordnung hergestellt!"
     );
-    this.failText = this.createCenteredText("Versuche es erneut", "#ff0000ff");
+    this.failText = this.createCenteredText("Versuche es erneut!", "#ff0000ff");
   }
 
   // HILFSFUNKTION für zentrierten Text
-  createCenteredText(text, fillColor) {
+  createCenteredText(text) {
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
 
     return this.add
       .text(centerX, centerY, text, {
-        font: "50px Macondo",
-        fill: fillColor,
-        backgroundColor: "#00000080",
+        fontSize: "48px",
+        fontFamily: "Macondo",
+        fill: "#FFD700",
         padding: { x: 20, y: 10 },
       })
       .setOrigin(0.5)
@@ -114,9 +121,6 @@ class LevelFourScene extends Phaser.Scene {
 
   setupHtmlClasses() {
     document.getElementById("bodyId").classList.toggle("level4-background");
-    document
-      .getElementById("game-container")
-      .classList.toggle("level4-game-container");
   }
 
   _startBackgroundMusic() {
@@ -174,12 +178,12 @@ class LevelFourScene extends Phaser.Scene {
   createScoreText() {
     this.scoreText = this.add
       .text(
-        410,
-        10,
+        400,
+        565,
         `Ordnung: ${this.itemsDroppedCount}/${TOTAL_ITEMS_REQUIRED}`,
         {
-          font: "20px Macondo",
-          fill: "#ffffff",
+          font: "24px Macondo",
+          fill: "#FFD700",
         }
       )
       .setDepth(10);

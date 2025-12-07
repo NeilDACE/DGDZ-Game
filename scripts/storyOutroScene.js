@@ -81,7 +81,7 @@ class StoryOutroScene extends Phaser.Scene {
     this.storyText = this.add
       .text(width / 2, 50, "", {
         fontSize: "22px",
-        fontFamily: "Macondo",
+        fontFamily: "Arial",
         color: "#ffffff",
         align: "center",
         wordWrap: { width: width - 80 },
@@ -131,7 +131,7 @@ class StoryOutroScene extends Phaser.Scene {
     document.getElementById("bodyId").classList.toggle("levelOutro-background");
     document
       .getElementById("game-container")
-      .classList.toggle("level5-game-container");
+      .classList.toggle("level-game-container");
   }
 
   /**
@@ -146,7 +146,6 @@ class StoryOutroScene extends Phaser.Scene {
         this.storyText.y + this.storyText.height + 40,
         "Weiter mit Klick oder Leertaste",
         {
-          fontFamily: "Macondo",
           fontSize: "18px",
           color: "#aaaaaa",
         }
