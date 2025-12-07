@@ -40,7 +40,7 @@ class StoryOutroScene extends Phaser.Scene {
    * Loads necessary assets, including background music.
    */
   preload() {
-    this.load.audio("bg_1_music", "assets/story-outro/outro.mp3");
+    this.load.audio("bg_outro_music", "assets/story-outro/outro.mp3");
   }
 
   /**
@@ -50,7 +50,7 @@ class StoryOutroScene extends Phaser.Scene {
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
 
-    this.music = this.sound.add("bg_1_music", {
+    this.music = this.sound.add("bg_outro_music", {
       volume: 0.5,
       loop: false,
     });

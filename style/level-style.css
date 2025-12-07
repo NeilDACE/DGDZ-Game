@@ -50,3 +50,12 @@
 .level5-game-container {
   border: 2px solid rgb(242, 202, 0, 0.3);
 }
+.levelOutro-background {
+  background-color: black;
+  background-size: cover;
+  background-position: center;
+}
+
+.levelOutro-game-container {
+  border: 2px solid rgb(242, 202, 0, 0.3);
+}
