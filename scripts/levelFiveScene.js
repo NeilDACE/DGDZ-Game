@@ -37,7 +37,7 @@ class LevelFiveScene extends Phaser.Scene {
     this.tileSize = 56; // etwas kleiner, damit alles gut reinpasst
 
     // Schwierigkeitsgrad: wie viele "virtuelle Klicks" wir machen
-    this.mixClicks = 8;
+    this.mixClicks = 4;
 
     // Raster zentrieren
     this.offsetX = (width - this.cols * this.tileSize) / 2;
@@ -57,6 +57,7 @@ class LevelFiveScene extends Phaser.Scene {
       .text(width / 2, 30, "Level 5: Quanten-KI-Computer", {
         fontSize: "26px",
         color: "#00ffe0",
+        fontFamily: "Macondo",
       })
       .setOrigin(0.5);
 
@@ -66,7 +67,7 @@ class LevelFiveScene extends Phaser.Scene {
         width / 2,
         60,
         "Ziel: Alle Felder AN, um den Computer einzuschalten.",
-        { fontSize: "16px", color: "#ccccff" }
+        { fontSize: "16px", fontFamily: "Macondo", color: "#ccccff" }
       )
       .setOrigin(0.5);
 
@@ -76,6 +77,7 @@ class LevelFiveScene extends Phaser.Scene {
         fontSize: "20px",
         color: "#ffffff",
         align: "center",
+        fontFamily: "Macondo",
       })
       .setOrigin(0.5);
 
@@ -187,7 +189,6 @@ class LevelFiveScene extends Phaser.Scene {
       // Kleines Delay, damit der aktuelle Klick NICHT den Szenenwechsel auslöst
       this.time.delayedCall(200, () => {
         this.input.once("pointerdown", () => {
-
           if (this.music) {
             this.music.stop();
           }

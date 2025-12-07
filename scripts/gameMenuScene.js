@@ -41,7 +41,7 @@ class GameMenuScene extends Phaser.Scene {
       .text(width / 2, textY, "Spiel starten", {
         // Text auf Deutsch belassen
         fontSize: "40px",
-        fontFamily: "Arial",
+        fontFamily: "Macondo",
         color: "#ffffff",
       })
       .setOrigin(0.5);

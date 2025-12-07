@@ -18,7 +18,7 @@ class LevelCreditsScene extends Phaser.Scene {
     document.getElementById("gameMenuFooter").classList.toggle("hidden");
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
-    
+
     const width = this.scale.width;
     const height = this.scale.height;
 
@@ -85,7 +85,7 @@ class LevelCreditsScene extends Phaser.Scene {
         fontSize: "26px",
         color: "#ffffffff",
         align: "center",
-        fontFamily: "Arial",
+        fontFamily: "Macondo",
         wordWrap: {
           width: width - 100,
         },

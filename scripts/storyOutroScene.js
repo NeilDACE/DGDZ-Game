@@ -81,7 +81,7 @@ class StoryOutroScene extends Phaser.Scene {
     this.storyText = this.add
       .text(width / 2, 50, "", {
         fontSize: "22px",
-        fontFamily: "Arial",
+        fontFamily: "Macondo",
         color: "#ffffff",
         align: "center",
         wordWrap: { width: width - 80 },
@@ -146,6 +146,7 @@ class StoryOutroScene extends Phaser.Scene {
         this.storyText.y + this.storyText.height + 40,
         "Weiter mit Klick oder Leertaste",
         {
+          fontFamily: "Macondo",
           fontSize: "18px",
           color: "#aaaaaa",
         }

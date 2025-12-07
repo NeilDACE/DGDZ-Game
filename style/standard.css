@@ -1,4 +1,12 @@
+@font-face {
+  font-family: "Macondo"; /* Name, den du später verwendest */
+  src: url("/assets/fonts/Macondo/Macondo-Regular.ttf") format("woff2"); /* Pfad zur Datei */
+  font-weight: normal; /* Oder 400 */
+  font-style: normal;
+}
+
 body {
+  font-family: "Macondo", sans-serif;
   margin: 0;
   background: #000;
 }
