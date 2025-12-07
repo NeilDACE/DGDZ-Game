@@ -49,6 +49,7 @@ class StoryOutroScene extends Phaser.Scene {
   create() {
     document.getElementById("side-left").classList.toggle("hidden");
     document.getElementById("side-right").classList.toggle("hidden");
+    this.setupHtmlClasses();
 
     this.music = this.sound.add("bg_outro_music", {
       volume: 0.5,
@@ -124,6 +125,10 @@ class StoryOutroScene extends Phaser.Scene {
         this._showContinueHint();
       }
     }
+  }
+
+  setupHtmlClasses() {
+    document.getElementById("bodyId").classList.toggle("levelOutro-background");
   }
 
   /**

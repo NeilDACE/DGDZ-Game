@@ -350,7 +350,7 @@ class LevelThreeScene extends Phaser.Scene {
    * Called when all ingredients have been collected. Stops the animation and transitions scene.
    */
   _levelComplete() {
-    this.feedbackText.setText("Brau abgeschlossen! Das Gebräu ist fertig!");
+    this.feedbackText.setText("Trank der Ordnung fertig gestellt!");
 
     this.background.anims.stop();
     this.background.setFrame(3);
